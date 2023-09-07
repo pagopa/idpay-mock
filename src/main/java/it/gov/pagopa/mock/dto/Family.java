@@ -1,21 +1,17 @@
-package it.gov.pagopa.mock.model;
+package it.gov.pagopa.mock.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Document("mocked_families")
+@SuperBuilder
 public class Family {
-    @Id
     private String familyId;
     private Set<String> memberIds;
 }

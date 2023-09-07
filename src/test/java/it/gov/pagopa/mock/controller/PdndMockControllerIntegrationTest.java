@@ -3,7 +3,7 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.common.utils.TestUtils;
 import it.gov.pagopa.common.web.mockmvc.MockMvcUtils;
 import it.gov.pagopa.mock.BaseIntegrationTest;
-import it.gov.pagopa.mock.model.Family;
+import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
 
         if (existFamilyInDB) {
             mongoTemplate.remove(
-                    new Query(Criteria.where("_id").is(family.getFamilyId())),
+                    new Query(Criteria.where("familyId").is(family.getFamilyId())),
                     "mocked_families");
         }
     }

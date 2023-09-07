@@ -6,6 +6,8 @@ import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
 import it.gov.pagopa.mock.service.residence.ResidenceMockGeneratorService;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 public class PdndApiMockServiceImpl implements PdndApiMockService {
     private final FamilyMockGeneratorService familyMockGeneratorService;
@@ -24,5 +26,10 @@ public class PdndApiMockServiceImpl implements PdndApiMockService {
     @Override
     public Residence getResidenceForUser(String userId) {
         return residenceMockGeneratorService.generateResidence(userId);
+    }
+
+    @Override
+    public Family upsertFamilyUnit(String familyId, Set<String> userIds){
+        return familyMockGeneratorService.upsertFamilyUnit(familyId, userIds);
     }
 }

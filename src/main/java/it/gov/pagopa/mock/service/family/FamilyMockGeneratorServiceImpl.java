@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorService {
@@ -34,6 +35,16 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
                 .build();
     }
 
+    @Override
+    public Family upsertFamilyUnit(String familyId, Set<String> userIds) {
+        MockedFamily upsertedFamilyUnit = createFamilyUnit(MockedFamily.builder()
+                .id(familyId)
+                .memberIds(userIds)
+                .build());
+
+        return Family.builder().familyId(upsertedFamilyUnit.getId()).memberIds(upsertedFamilyUnit.getMemberIds()).build();
+    }
+
     private Family searchMockCollection(String userId) {
         try{
             MockedFamily mockedFamily = mongoTemplate.find(
@@ -48,4 +59,9 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
             return null;
         }
     }
+
+    private MockedFamily createFamilyUnit(MockedFamily mockedFamily){
+        return mongoTemplate.save(mockedFamily);
+    }
+
 }

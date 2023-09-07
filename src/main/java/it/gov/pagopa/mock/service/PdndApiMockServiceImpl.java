@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.service;
 
-import it.gov.pagopa.mock.dto.Family;
+import it.gov.pagopa.mock.model.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
 import it.gov.pagopa.mock.service.residence.ResidenceMockGeneratorService;

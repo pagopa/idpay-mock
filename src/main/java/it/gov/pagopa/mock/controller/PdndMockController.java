@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.controller;
 
-import it.gov.pagopa.mock.dto.Family;
+import it.gov.pagopa.mock.model.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

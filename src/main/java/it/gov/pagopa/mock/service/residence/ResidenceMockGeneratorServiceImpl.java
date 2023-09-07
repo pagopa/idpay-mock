@@ -8,13 +8,14 @@ import java.util.Random;
 @Service
 public class ResidenceMockGeneratorServiceImpl implements ResidenceMockGeneratorService {
 
+    public static final String MILANO = "Milano";
     @Override
     public Residence generateResidence(String userId) {
         return userIdBasedIntegerGenerator(userId).nextInt(0, 2) == 0
                 ? Residence.builder()
-                .city("Milano")
-                .cityCouncil("Milano")
-                .province("Milano")
+                .city(MILANO)
+                .cityCouncil(MILANO)
+                .province(MILANO)
                 .region("Lombardia")
                 .postalCode("20124")
                 .nation("Italia")

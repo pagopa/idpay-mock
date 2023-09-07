@@ -4,6 +4,7 @@ import it.gov.pagopa.common.utils.TestUtils;
 import it.gov.pagopa.common.web.mockmvc.MockMvcUtils;
 import it.gov.pagopa.mock.BaseIntegrationTest;
 import it.gov.pagopa.mock.dto.Family;
+import it.gov.pagopa.mock.model.MockedFamily;
 import it.gov.pagopa.mock.dto.Residence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,20 +27,22 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void getFamilyForUser(boolean existFamilyInDB) {
-        Family family;
+        MockedFamily mockedFamily;
         if (existFamilyInDB) {
-            family = Family.builder()
+            mockedFamily = MockedFamily.builder()
+                    .id("ID")
                     .familyId("FAMILYID")
                     .memberIds(Set.of(userId, "USERID2")).build();
-            mongoTemplate.save(family, "mocked_families");
+            mongoTemplate.save(mockedFamily, "mocked_families");
         } else {
-            family = Family.builder()
+            mockedFamily = MockedFamily.builder()
+                    .id("ID")
                     .familyId("FAMILYID_" + userId)
                     .memberIds(new HashSet<>(List.of(userId)))
                     .build();
         }
 
-        Family familyResult=null;
+        Family familyResult =null;
 
         try {
             familyResult = MockMvcUtils.extractResponse(getFamily(userId), HttpStatus.OK, Family.class);
@@ -47,12 +50,16 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
             Assertions.fail();
         }
 
+        Family expectedFamily = Family.builder().familyId(mockedFamily.getFamilyId())
+                .memberIds(mockedFamily.getMemberIds())
+                .build();
+
         Assertions.assertNotNull(familyResult);
-        Assertions.assertEquals(family,familyResult);
+        Assertions.assertEquals(expectedFamily, familyResult);
 
         if (existFamilyInDB) {
             mongoTemplate.remove(
-                    new Query(Criteria.where("familyId").is(family.getFamilyId())),
+                    new Query(Criteria.where("familyId").is(mockedFamily.getFamilyId())),
                     "mocked_families");
         }
     }

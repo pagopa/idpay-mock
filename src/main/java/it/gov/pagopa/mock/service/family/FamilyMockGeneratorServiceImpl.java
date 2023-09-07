@@ -1,11 +1,8 @@
 package it.gov.pagopa.mock.service.family;
 
 import it.gov.pagopa.mock.dto.Family;
-import lombok.AllArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.Id;
+import it.gov.pagopa.mock.model.MockedFamily;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -39,10 +36,9 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
 
     private Family searchMockCollection(String userId) {
         try{
-            Family mockedFamily = mongoTemplate.find(
+            MockedFamily mockedFamily = mongoTemplate.find(
                     new Query(Criteria.where("memberIds").is(userId)),
-                    Family.class,
-                    "mocked_families"
+                    MockedFamily.class
             ).get(0);
 
             return Family.builder().familyId(mockedFamily.getFamilyId())
@@ -50,17 +46,6 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
                     .build();
         } catch (IndexOutOfBoundsException e){
             return null;
-        }
-    }
-
-    @Document("mocked_families")
-    @SuperBuilder
-    @AllArgsConstructor
-    public static class MockedFamily extends Family {
-        @Id
-        @Override
-        public String getFamilyId() {
-            return super.getFamilyId();
         }
     }
 }

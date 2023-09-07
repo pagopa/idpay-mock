@@ -54,9 +54,6 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
     @AllArgsConstructor
     public static class MockedFamily extends Family {
         @Id
-        @Override
-        public String getFamilyId() {
-            return super.getFamilyId();
-        }
+        private String id;
     }
 }

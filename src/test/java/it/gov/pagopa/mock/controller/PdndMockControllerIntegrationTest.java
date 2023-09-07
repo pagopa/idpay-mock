@@ -73,7 +73,7 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
         TestUtils.checkNotNullFields(residenceResult);
     }
 
-    private MvcResult getFamily(String userId) throws Exception {
+    protected MvcResult getFamily(String userId) throws Exception {
         return mockMvc
                 .perform(get("/idpay/mock/family/user/{userId}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +81,7 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
                 .andReturn();
     }
 
-    private MvcResult getResidence(String userId) throws Exception {
+    protected MvcResult getResidence(String userId) throws Exception {
         return mockMvc
                 .perform(get("/idpay/mock/residence/user/{userId}", userId)
                         .contentType(MediaType.APPLICATION_JSON)

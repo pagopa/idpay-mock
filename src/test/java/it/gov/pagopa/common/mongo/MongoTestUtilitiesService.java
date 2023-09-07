@@ -1,4 +1,4 @@
-package it.gov.pagopa.common.mongo.repository;
+package it.gov.pagopa.common.mongo;
 
 import com.mongodb.event.CommandStartedEvent;
 import io.micrometer.core.instrument.MeterRegistry;

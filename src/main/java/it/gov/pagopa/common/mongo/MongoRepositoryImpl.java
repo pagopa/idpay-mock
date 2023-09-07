@@ -1,4 +1,4 @@
-package it.gov.pagopa.common.mongo.repository;
+package it.gov.pagopa.common.mongo;
 
 import lombok.NonNull;
 import org.springframework.data.mongodb.core.MongoOperations;

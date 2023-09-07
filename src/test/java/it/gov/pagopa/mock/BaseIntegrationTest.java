@@ -1,7 +1,7 @@
 package it.gov.pagopa.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.common.mongo.repository.MongoTestUtilitiesService;
+import it.gov.pagopa.common.mongo.MongoTestUtilitiesService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

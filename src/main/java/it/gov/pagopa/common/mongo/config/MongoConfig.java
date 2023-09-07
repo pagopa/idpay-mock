@@ -1,7 +1,7 @@
 package it.gov.pagopa.common.mongo.config;
 
 import com.mongodb.lang.NonNull;
-import it.gov.pagopa.common.mongo.repository.MongoRepositoryImpl;
+import it.gov.pagopa.common.mongo.MongoRepositoryImpl;
 import lombok.Setter;
 import org.bson.types.Decimal128;
 import org.springframework.boot.autoconfigure.mongo.MongoClientSettingsBuilderCustomizer;

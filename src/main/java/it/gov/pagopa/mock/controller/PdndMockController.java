@@ -5,6 +5,7 @@ import it.gov.pagopa.mock.dto.Residence;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -15,7 +16,7 @@ public interface PdndMockController {
 
     @PutMapping("/family")
     ResponseEntity<Family> upsertFamilyUnit(@RequestParam(required = false) String familyId,
-                                        @RequestBody Set<String> userIds);
+                                        @RequestBody List<String> userIds);
 
     @GetMapping("/residence/user/{userId}")
     ResponseEntity<Residence> getResidenceForUser(@PathVariable String userId);

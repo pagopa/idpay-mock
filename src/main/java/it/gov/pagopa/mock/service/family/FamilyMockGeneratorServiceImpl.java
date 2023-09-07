@@ -39,11 +39,15 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
 
     private Family searchMockCollection(String userId) {
         try{
-            return mongoTemplate.find(
+            Family mockedFamily = mongoTemplate.find(
                     new Query(Criteria.where("memberIds").is(userId)),
                     Family.class,
                     "mocked_families"
             ).get(0);
+
+            return Family.builder().familyId(mockedFamily.getFamilyId())
+                    .memberIds(mockedFamily.getMemberIds())
+                    .build();
         } catch (IndexOutOfBoundsException e){
             return null;
         }
@@ -54,6 +58,9 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
     @AllArgsConstructor
     public static class MockedFamily extends Family {
         @Id
-        private String id;
+        @Override
+        public String getFamilyId() {
+            return super.getFamilyId();
+        }
     }
 }

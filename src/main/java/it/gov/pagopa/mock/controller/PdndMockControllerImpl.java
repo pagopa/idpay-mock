@@ -3,11 +3,10 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import it.gov.pagopa.mock.service.PdndApiMockService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -26,7 +25,7 @@ public class PdndMockControllerImpl implements PdndMockController {
 
     @Override
     public ResponseEntity<Family> upsertFamilyUnit(String familyId, Set<String> userIds){
-        return ResponseEntity.ok(pdndApiMockService.upsertFamilyUnit(familyId, userIds));
+        return new ResponseEntity<>(pdndApiMockService.upsertFamilyUnit(familyId, userIds), HttpStatus.OK);
     }
 
     @Override

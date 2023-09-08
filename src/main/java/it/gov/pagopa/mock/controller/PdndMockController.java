@@ -3,13 +3,13 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
-
+@Validated
 @RequestMapping("/idpay/mock")
 public interface PdndMockController {
     @GetMapping("/family/user/{userId}")
@@ -17,7 +17,7 @@ public interface PdndMockController {
 
     @PutMapping("/family")
     ResponseEntity<Family> upsertFamilyUnit(@RequestParam(required = false) String familyId,
-                                            @RequestBody @NotEmpty Set<String> userIds);
+                                            @RequestBody @NotEmpty(message = "The list of userIds cannot be empty") Set<String> userIds);
 
     @GetMapping("/residence/user/{userId}")
     ResponseEntity<Residence> getResidenceForUser(@PathVariable String userId);

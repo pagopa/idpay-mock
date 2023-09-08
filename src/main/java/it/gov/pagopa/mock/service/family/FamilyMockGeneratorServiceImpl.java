@@ -1,10 +1,12 @@
 package it.gov.pagopa.mock.service.family;
 
+import it.gov.pagopa.common.web.exception.ClientExceptionWithBody;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.model.MockedFamily;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -37,6 +39,15 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
 
     @Override
     public Family upsertFamilyUnit(String familyId, Set<String> userIds) {
+
+        userIds.forEach(userId -> {
+                    MockedFamily retrievedFamily = findFamily(userId);
+                    if (retrievedFamily != null && !retrievedFamily.getId().equals(familyId)) {
+                        throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), String.format("The user %s is already member of the family unit %s", userId, retrievedFamily.getId()));
+                    }
+                });
+
+
         MockedFamily upsertedFamilyUnit = createFamilyUnit(MockedFamily.builder()
                 .id(familyId)
                 .memberIds(userIds)
@@ -58,6 +69,13 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
         } catch (IndexOutOfBoundsException e){
             return null;
         }
+    }
+
+    private MockedFamily findFamily(String userId){
+        return mongoTemplate.findOne(
+                new Query(Criteria.where("memberIds").is(userId)),
+                MockedFamily.class
+        );
     }
 
     private MockedFamily createFamilyUnit(MockedFamily mockedFamily){

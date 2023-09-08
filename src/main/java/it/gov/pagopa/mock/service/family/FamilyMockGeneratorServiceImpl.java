@@ -2,6 +2,7 @@ package it.gov.pagopa.mock.service.family;
 
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.model.MockedFamily;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Service
+@Slf4j
 public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorService {
 
     private final MongoTemplate mongoTemplate;
@@ -21,7 +23,7 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
 
     @Override
     public Family retrieveFamily(String userId) {
-
+        log.info("[RETRIEVE_FAMILY] Retrieve family for user {}", userId);
         Family family = searchMockCollection(userId);
 
         if (family != null) {

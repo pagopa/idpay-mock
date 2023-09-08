@@ -1,16 +1,19 @@
 package it.gov.pagopa.mock.service.residence;
 
 import it.gov.pagopa.mock.dto.Residence;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
 @Service
+@Slf4j
 public class ResidenceMockGeneratorServiceImpl implements ResidenceMockGeneratorService {
 
     public static final String MILANO = "Milano";
     @Override
     public Residence generateResidence(String userId) {
+        log.info("[RETRIEVE_FAMILY] Retrieve residence for user {}", userId);
         return userIdBasedIntegerGenerator(userId).nextInt(0, 2) == 0
                 ? Residence.builder()
                 .city(MILANO)

@@ -41,19 +41,19 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
     public Family upsertFamilyUnit(String familyId, Set<String> userIds) {
 
         userIds.forEach(userId -> {
-                    MockedFamily retrievedFamily = findFamily(userId);
-                    if (retrievedFamily != null && !retrievedFamily.getId().equals(familyId)) {
-                        throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), String.format("The user %s is already member of the family unit %s", userId, retrievedFamily.getId()));
+                    Family retrievedFamily = searchMockCollection(userId);
+                    if (retrievedFamily != null && !retrievedFamily.getFamilyId().equals(familyId)) {
+                        throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), String.format("The user %s is already member of the family unit %s", userId, retrievedFamily.getFamilyId()));
                     }
                 });
 
 
-        MockedFamily upsertedFamilyUnit = createFamilyUnit(MockedFamily.builder()
-                .id(familyId)
+        MockedFamily upsertedFamilyUnit = saveFamilyUnit(MockedFamily.builder()
+                .familyId(familyId)
                 .memberIds(userIds)
                 .build());
 
-        return Family.builder().familyId(upsertedFamilyUnit.getId()).memberIds(upsertedFamilyUnit.getMemberIds()).build();
+        return Family.builder().familyId(upsertedFamilyUnit.getFamilyId()).memberIds(upsertedFamilyUnit.getMemberIds()).build();
     }
 
     private Family searchMockCollection(String userId) {
@@ -71,14 +71,7 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
         }
     }
 
-    private MockedFamily findFamily(String userId){
-        return mongoTemplate.findOne(
-                new Query(Criteria.where("memberIds").is(userId)),
-                MockedFamily.class
-        );
-    }
-
-    private MockedFamily createFamilyUnit(MockedFamily mockedFamily){
+    private MockedFamily saveFamilyUnit(MockedFamily mockedFamily){
         return mongoTemplate.save(mockedFamily);
     }
 

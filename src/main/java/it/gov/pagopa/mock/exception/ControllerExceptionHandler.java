@@ -17,8 +17,7 @@ import java.util.List;
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorDTO> handleQueryValidationExceptions(
-            ConstraintViolationException ex) {
+    public ResponseEntity<ErrorDTO> handleQueryValidationExceptions(ConstraintViolationException ex) {
         List<String> errors = new ArrayList<>();
 
         ex.getConstraintViolations().forEach(error ->

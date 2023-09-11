@@ -1,9 +1,11 @@
 package it.gov.pagopa.mock.service;
 
+import it.gov.pagopa.common.web.exception.ClientExceptionWithBody;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
 import it.gov.pagopa.mock.service.residence.ResidenceMockGeneratorService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -30,6 +32,11 @@ public class PdndApiMockServiceImpl implements PdndApiMockService {
 
     @Override
     public Family upsertFamilyUnit(String familyId, Set<String> userIds){
+        userIds.forEach(userId -> {
+            if (userId.equals("")){
+                throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "The userIds cannot be empty strings");
+            }
+        });
         return familyMockGeneratorService.upsertFamilyUnit(familyId, userIds);
     }
 }

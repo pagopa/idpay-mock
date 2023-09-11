@@ -34,7 +34,7 @@ public class PdndApiMockServiceImpl implements PdndApiMockService {
     public Family upsertFamilyUnit(String familyId, Set<String> userIds){
         userIds.forEach(userId -> {
             if (userId.equals("")){
-                throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "The userIds cannot be empty strings");
+                throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "The userIds cannot contain empty strings");
             }
         });
         return familyMockGeneratorService.upsertFamilyUnit(familyId, userIds);

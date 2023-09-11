@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
@@ -94,21 +95,26 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
         userIds.add(userId);
         userIds.add(userId2);
 
-        Family upsertedFamily = null;
-        ErrorDTO error = null;
         try{
             //Creating the familyUnit from scratch
-            upsertedFamily = MockMvcUtils.extractResponse(upsertFamily(null, userIds), HttpStatus.OK, Family.class);
+            Family upsertedFamily = MockMvcUtils.extractResponse(upsertFamily(null, userIds), HttpStatus.OK, Family.class);
+            assertEquals(2, upsertedFamily.getMemberIds().size());
+            assertTrue(upsertedFamily.getMemberIds().contains(userId));
+            assertTrue(upsertedFamily.getMemberIds().contains(userId2));
             //Trying to create another family unit with the same members from before, throws exception and returns a bad request
             MvcResult result = upsertFamily_badRequest(null, userIds);
-            error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);
+            ErrorDTO error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);
+            assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+            assertEquals(String.format("The user %s is already member of the family unit %s", userId, upsertedFamily.getFamilyId()), error.getMessage());
+            //Trying to update the same family unit with just one of the members of the family unit
+            userIds.clear();
+            userIds.add(userId);
+            upsertedFamily = MockMvcUtils.extractResponse(upsertFamily(upsertedFamily.getFamilyId(), userIds), HttpStatus.OK, Family.class);
+            assertEquals(1, upsertedFamily.getMemberIds().size());
         } catch (Exception e){
             Assertions.fail(e);
         }
 
-        assertEquals(2, upsertedFamily.getMemberIds().size());
-        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
-        assertEquals(String.format("The user %s is already member of the family unit %s", userId, upsertedFamily.getFamilyId()), error.getMessage());
 
     }
 
@@ -125,12 +131,15 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void upsertFamilyUnit_emptyStringUserIds() throws Exception {
-        MvcResult result = upsertFamily_badRequest(null, new HashSet<>());
+        Set<String> userIds = new HashSet<>();
+        userIds.add(userId);
+        userIds.add("");
+        MvcResult result = upsertFamily_badRequest(null, userIds);
 
         ErrorDTO error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
-        assertEquals("The list of userIds cannot be empty", error.getMessage());
+        assertEquals("The userIds cannot contain empty strings", error.getMessage());
 
     }
 

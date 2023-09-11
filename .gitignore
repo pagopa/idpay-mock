@@ -183,3 +183,6 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,visualstudiocode,java,gradle,maven,helm
+
+# Ignore secrets directory for test
+/src/test/resources/secrets/*

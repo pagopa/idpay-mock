@@ -124,7 +124,7 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    void upsertFamilyUnit_emptyStringkUserIds() throws Exception {
+    void upsertFamilyUnit_emptyStringUserIds() throws Exception {
         MvcResult result = upsertFamily_badRequest(null, new HashSet<>());
 
         ErrorDTO error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);

@@ -45,6 +45,7 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
         userIds.forEach(userId -> {
             Family retrievedFamily = searchMockCollection(userId);
             if (retrievedFamily != null && !retrievedFamily.getFamilyId().equals(familyId)) {
+                log.error("[UPSERT_FAMILY_UNIT] Error during family unit upsert. User {} is already in the family unit {}", userId, retrievedFamily.getFamilyId());
                 throw new ClientExceptionWithBody(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), String.format("The user %s is already member of the family unit %s", userId, retrievedFamily.getFamilyId()));
             }
         });
@@ -54,6 +55,8 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
                 .familyId(familyId)
                 .memberIds(userIds)
                 .build());
+
+        log.info("[UPSERT_FAMILY_UNIT] Upserted family unit with id {} and family members {}", upsertedFamilyUnit.getFamilyId(), upsertedFamilyUnit.getMemberIds());
 
         return Family.builder().familyId(upsertedFamilyUnit.getFamilyId()).memberIds(upsertedFamilyUnit.getMemberIds()).build();
     }

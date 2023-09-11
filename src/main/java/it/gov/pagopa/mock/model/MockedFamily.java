@@ -16,7 +16,6 @@ import java.util.Set;
 @Document("mocked_families")
 public class MockedFamily {
     @MongoId
-    private String id;
     private String familyId;
     private Set<String> memberIds;
 }

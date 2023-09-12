@@ -60,8 +60,12 @@ microservice-chart:
     idpay-common:
       TZ: TZ
 
+    rest-client:
+      PDV_ENCRYPT_BASE_URL: pdv_decrypt_base_url
+
   envSecret:
     MONGODB_URI: mongodb-connection-string
+    PDV_ENCRYPT_API_KEY: pdv-api-key
 
   # nodeSelector: {}
 

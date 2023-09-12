@@ -15,7 +15,7 @@ public class ErrorManager {
     private static final ErrorDTO defaultErrorDTO;
 
     static {
-        defaultErrorDTO = new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something gone wrong");
+        defaultErrorDTO = new ErrorDTO("Error", "Something gone wrong");
     }
 
     @ExceptionHandler(RuntimeException.class)

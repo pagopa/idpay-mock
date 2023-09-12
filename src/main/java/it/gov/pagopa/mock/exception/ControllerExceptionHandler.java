@@ -25,7 +25,7 @@ public class ControllerExceptionHandler {
         );
         String message = String.join(" - ", errors);
         return new ResponseEntity<>(
-                new ErrorDTO(HttpStatus.BAD_REQUEST.value(), message),
+                new ErrorDTO("CONSTRAINT_VIOLATION", message),
                 HttpStatus.BAD_REQUEST);
     }
 

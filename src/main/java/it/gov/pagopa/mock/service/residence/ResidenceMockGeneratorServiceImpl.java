@@ -13,7 +13,7 @@ public class ResidenceMockGeneratorServiceImpl implements ResidenceMockGenerator
     public static final String MILANO = "Milano";
     @Override
     public Residence generateResidence(String userId) {
-        log.info("[RETRIEVE_FAMILY] Retrieve residence for user {}", userId);
+        log.info("[RETRIEVE_RESIDENCE] Retrieve residence for user {}", userId);
         return userIdBasedIntegerGenerator(userId).nextInt(0, 2) == 0
                 ? Residence.builder()
                 .city(MILANO)

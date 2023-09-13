@@ -11,7 +11,6 @@ import org.springframework.test.context.TestPropertySource;
         "classpath:/mongodbEmbeddedDisabled.properties",
         "classpath:/secrets/mongodbConnectionString.properties"
 })
-@Disabled
 class PdndMockControllerIntegrationTestIntegrated extends PdndMockControllerIntegrationTest{
 
 }

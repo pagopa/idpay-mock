@@ -6,7 +6,6 @@ import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.mockmvc.MockMvcUtils;
 import it.gov.pagopa.mock.BaseIntegrationTest;
 import it.gov.pagopa.mock.connector.encrypt.EncryptRestConnector;
-import it.gov.pagopa.mock.connector.encrypt.EncryptRestConnectorImpl;
 import it.gov.pagopa.mock.dto.CFDTO;
 import it.gov.pagopa.mock.dto.EncryptedCfDTO;
 import it.gov.pagopa.mock.dto.Family;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -120,7 +118,7 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
             //Trying to create another family unit with the same members from before, throws exception and returns a bad request
             MvcResult result = upsertFamily_badRequest(null, userIds);
             ErrorDTO error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);
-            assertEquals(HttpStatus.BAD_REQUEST.value(), error.getCode());
+            assertEquals("FAMILY_UNIT", error.getCode());
             assertEquals(String.format("The user %s is already member of the family unit %s", userId, upsertedFamily.getFamilyId()), error.getMessage());
             //Trying to update the same family unit with just one of the members of the family unit
             userIds.clear();

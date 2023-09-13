@@ -1,17 +1,7 @@
 package it.gov.pagopa.mock.controller;
 
-import it.gov.pagopa.common.web.mockmvc.MockMvcUtils;
-import it.gov.pagopa.mock.dto.Family;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpStatus;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.test.context.TestPropertySource;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * See confluence page: <a href="https://pagopa.atlassian.net/wiki/spaces/IDPAY/pages/615974424/Secrets+UnitTests">Secrets for UnitTests</a>
@@ -21,6 +11,7 @@ import java.util.Set;
         "classpath:/mongodbEmbeddedDisabled.properties",
         "classpath:/secrets/mongodbConnectionString.properties"
 })
+@Disabled
 class PdndMockControllerIntegrationTestIntegrated extends PdndMockControllerIntegrationTest{
 
 }

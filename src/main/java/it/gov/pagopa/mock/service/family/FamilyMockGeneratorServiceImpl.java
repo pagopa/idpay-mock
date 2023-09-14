@@ -7,6 +7,7 @@ import it.gov.pagopa.mock.dto.EncryptedCfDTO;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.model.MockedFamily;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @Service
@@ -40,7 +42,7 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
         }
 
         return Family.builder()
-                .familyId("FAMILYID_" + userId)
+                .familyId(RandomStringUtils.randomAlphanumeric(24).toLowerCase(Locale.ROOT))
                 .memberIds(new HashSet<>(List.of(userId)))
                 .build();
     }

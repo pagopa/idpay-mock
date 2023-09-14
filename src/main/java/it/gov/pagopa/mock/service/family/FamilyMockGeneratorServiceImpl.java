@@ -33,6 +33,7 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
     }
 
     @Override
+    @SuppressWarnings("squid:S2245")
     public Family retrieveFamily(String userId) {
         log.info("[RETRIEVE_FAMILY] Retrieve family for user {}", userId);
         Family family = searchMockCollection(userId);

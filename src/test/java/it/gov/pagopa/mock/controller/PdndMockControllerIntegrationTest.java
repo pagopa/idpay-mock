@@ -50,36 +50,36 @@ class PdndMockControllerIntegrationTest extends BaseIntegrationTest {
         mongoTemplate.remove(new Query(), "mocked_families");
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void getFamilyForUser(boolean existFamilyInDB) {
-        MockedFamily mockedFamily;
-        if (existFamilyInDB) {
-            mockedFamily = MockedFamily.builder()
-                    .familyId("FAMILYID")
-                    .memberIds(Set.of(userId, "USERID2")).build();
-            mongoTemplate.save(mockedFamily, "mocked_families");
-        } else {
-            mockedFamily = MockedFamily.builder()
-                    .familyId("FAMILYID_" + userId)
-                    .memberIds(new HashSet<>(List.of(userId)))
-                    .build();
-        }
-
-        Family familyResult =null;
-
-        try {
-            familyResult = MockMvcUtils.extractResponse(getFamily(userId), HttpStatus.OK, Family.class);
-        } catch (Exception e) {
-            Assertions.fail();
-        }
+    @Test
+    void getFamilyForUser_familyPresentIntoDB() throws Exception {
+        MockedFamily mockedFamily = MockedFamily.builder()
+                .familyId("FAMILYID")
+                .memberIds(Set.of(userId, "USERID2")).build();
+        mongoTemplate.save(mockedFamily, "mocked_families");
 
         Family expectedFamily = Family.builder().familyId(mockedFamily.getFamilyId())
                 .memberIds(mockedFamily.getMemberIds())
                 .build();
 
+
+        Family familyResult = MockMvcUtils.extractResponse(getFamily(userId), HttpStatus.OK, Family.class);
+
         assertNotNull(familyResult);
         assertEquals(expectedFamily, familyResult);
+
+    }
+
+    @Test
+    void getFamilyForUser_familyNotPresentIntoDB() throws Exception {
+
+        Family familyResult = MockMvcUtils.extractResponse(getFamily(userId), HttpStatus.OK, Family.class);
+
+        assertNotNull(familyResult);
+        assertEquals(Set.of(userId), familyResult.getMemberIds());
+        System.out.println(familyResult.getFamilyId());
+        assertEquals(24, familyResult.getFamilyId().length());
+
+
     }
 
 

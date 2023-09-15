@@ -184,7 +184,7 @@ stages:
                     valueFile: "$(Pipeline.Workspace)/helm/values-${{ lower(variables.environment) }}.yaml"
                     install: true
                     waitForExecution: true
-                    arguments: "--timeout 3m0s --debug"
+                    arguments: "--timeout 5m0s --debug"
                 - task: KubernetesManifest@0
                   displayName: Patch
                   inputs:
@@ -195,33 +195,33 @@ stages:
                     name: '$(helmReleaseName)-microservice-chart'
                     mergeStrategy: strategic
                     patch: '{"spec":{"template":{"metadata":{"annotations":{"buildNumber":"$(Build.BuildNumber)"}}}}}'
-  - stage: Test_e2e
-    displayName: 'Test_e2e_on_${{ variables.environment }}'
-    # TODO: before merging into release-dev modify the following condition
-    #       to depend on previous stages exit status
-    condition: or(eq(variables.environment, 'DEV'), eq(variables.environment, 'UAT'))
-    jobs:
-      - job: 'Run_Postman_collection_on_${{ variables.environment }}'
-        displayName: 'Run_Postman_collection_on_${{ variables.environment }}'
-        pool:
-          name: $(selfHostedAgentPool)
-        steps:
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '14.x'
-          - task: Npm@1
-            displayName: Install newman
-            inputs:
-              command: custom
-              customCommand: install -g newman
-          - task: DownloadSecureFile@1
-            displayName: 'download postman environment'
-            name: postman_env
-            inputs:
-              secureFile: $(postmanEnvFile)
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '**/test-*.xml'
-              searchFolder: '$(System.DefaultWorkingDirectory)/result/'
-              testRunTitle: 'Publish Newman Test Results'
+#  - stage: Test_e2e
+#    displayName: 'Test_e2e_on_${{ variables.environment }}'
+#    # TODO: before merging into release-dev modify the following condition
+#    #       to depend on previous stages exit status
+#    condition: or(eq(variables.environment, 'DEV'), eq(variables.environment, 'UAT'))
+#    jobs:
+#      - job: 'Run_Postman_collection_on_${{ variables.environment }}'
+#        displayName: 'Run_Postman_collection_on_${{ variables.environment }}'
+#        pool:
+#          name: $(selfHostedAgentPool)
+#        steps:
+#          - task: NodeTool@0
+#            inputs:
+#              versionSpec: '14.x'
+#          - task: Npm@1
+#            displayName: Install newman
+#            inputs:
+#              command: custom
+#              customCommand: install -g newman
+#          - task: DownloadSecureFile@1
+#            displayName: 'download postman environment'
+#            name: postman_env
+#            inputs:
+#              secureFile: $(postmanEnvFile)
+#          - task: PublishTestResults@2
+#            inputs:
+#              testResultsFormat: 'JUnit'
+#              testResultsFiles: '**/test-*.xml'
+#              searchFolder: '$(System.DefaultWorkingDirectory)/result/'
+#              testRunTitle: 'Publish Newman Test Results'

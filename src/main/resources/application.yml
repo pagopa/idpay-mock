@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: "@project.artifactId@"
+    version: "@project.version@"
+  jmx.enabled: true
+  config:
+    activate:
+      on-profile: default
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017}
+      database: ${MONGODB_DBNAME:idpay}
+      # custom configured properties
+      config:
+        connectionPool:
+          maxSize: ${MONGODB_CONNECTIONPOOL_MAX_SIZE:100}
+          minSize: ${MONGODB_CONNECTIONPOOL_MIN_SIZE:0}
+          maxWaitTimeMS: ${MONGODB_CONNECTIONPOOL_MAX_WAIT_MS:120000}
+          maxConnectionLifeTimeMS: ${MONGODB_CONNECTIONPOOL_MAX_CONNECTION_LIFE_MS:0}
+          maxConnectionIdleTimeMS: ${MONGODB_CONNECTIONPOOL_MAX_CONNECTION_IDLE_MS:120000}
+          maxConnecting: ${MONGODB_CONNECTIONPOOL_MAX_CONNECTING:2}
+
+logging:
+  level:
+    org:
+      springframework:
+        boot: ${LOG_LEVEL_SPRING_BOOT:INFO}
+        data: ${LOG_LEVEL_SPRING_DATA:INFO}
+    root: ${LOG_LEVEL_ROOT:INFO}
+    it:
+      gov:
+        pagopa: ${LOG_LEVEL_PAGOPA:INFO}
+
+rest-client:
+  encryptpdv:
+    baseUrl: ${PDV_ENCRYPT_BASE_URL:}
+    cf: ${PDV_ENCRYPT_SERVICE_CODE:pdv-ms-tokenizer-encrypt}
+
+api.key.encrypt: ${PDV_ENCRYPT_API_KEY:}
+
+management.endpoints:
+  web:
+    exposure.include: info, health

@@ -24,6 +24,7 @@ public class AnprMockGeneratorServiceImpl implements AnprMockGeneratorService {
         String codiceFiscale = anprRequestDTO.getCriteriRicerca().getCodiceFiscale();
         char residenceCode = codiceFiscale.charAt(11);
 
+        // if the twelfth letter of the cf is between A and M then the citizen has residence in Roma
         return (Character.toString(residenceCode).matches("[A-Ma-m]")) ?
                 mapper(codiceFiscale, "ROMA", "00100", "RM") :
                 mapper(codiceFiscale, "MILANO", "20121", "MI");

@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-public class AnprMockControllerTest extends BaseIntegrationTest {
+class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
     @Autowired

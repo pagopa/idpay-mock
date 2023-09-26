@@ -21,7 +21,7 @@ class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
     @Test
     void getAnprResidence() {
         AnprResponseDTO residenceResult = null;

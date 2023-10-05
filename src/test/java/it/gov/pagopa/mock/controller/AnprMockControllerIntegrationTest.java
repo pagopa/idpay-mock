@@ -7,7 +7,7 @@ import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.mapper.AnprMapperFaker;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +19,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     @Autowired
-    MockMvc mockMvc;
-    @Disabled
+    private MockMvc mockMvc;
+
+    @Test
     void getAnprResidence() {
         AnprResponseDTO residenceResult = null;
 
@@ -39,7 +40,7 @@ class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
 
     protected MvcResult getAnprResidence(AnprRequestDTO anprRequestDTO) throws Exception {
         return mockMvc
-                .perform(post("/idpay/anpr/mock/residence", anprRequestDTO)
+                .perform(post("/idpay/mock/anpr/C001-servizioNotifica/v1/anpr-service-e002", anprRequestDTO)
                         .content(objectMapper.writeValueAsString(anprRequestDTO))
                         .contentType(MediaType.APPLICATION_JSON)
                 )

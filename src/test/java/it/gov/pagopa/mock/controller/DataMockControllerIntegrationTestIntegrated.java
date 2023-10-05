@@ -1,6 +1,5 @@
 package it.gov.pagopa.mock.controller;
 
-import org.junit.jupiter.api.Disabled;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -11,6 +10,6 @@ import org.springframework.test.context.TestPropertySource;
         "classpath:/mongodbEmbeddedDisabled.properties",
         "classpath:/secrets/mongodbConnectionString.properties"
 })
-class PdndMockControllerIntegrationTestIntegrated extends PdndMockControllerIntegrationTest{
+class DataMockControllerIntegrationTestIntegrated extends DataMockControllerIntegrationTest {
 
 }

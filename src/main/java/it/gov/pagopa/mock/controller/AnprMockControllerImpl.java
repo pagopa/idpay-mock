@@ -3,10 +3,9 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.service.anpr_residence.AnprMockGeneratorService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 public class AnprMockControllerImpl implements AnprMockController {
 
     private final AnprMockGeneratorService anprMockGeneratorService;
@@ -16,7 +15,7 @@ public class AnprMockControllerImpl implements AnprMockController {
     }
 
     @Override
-    public ResponseEntity<AnprResponseDTO> getAnprResidence(AnprRequestDTO body) {
-        return ResponseEntity.ok(anprMockGeneratorService.getAnprResidence(body));
+    public AnprResponseDTO getAnprResidence(AnprRequestDTO body) {
+        return anprMockGeneratorService.getAnprResidence(body);
     }
 }

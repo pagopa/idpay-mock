@@ -4,7 +4,7 @@
     "urlPathPattern": "/tokens",
     "headers": {
       "x-api-key": {
-        "matches": "x_api_key([0-9]?)+"
+        "matches": "x_api_key[0-9]*"
       }
     },
     "bodyPatterns": [

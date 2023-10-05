@@ -64,7 +64,7 @@ public class IseeMockServiceImpl implements IseeMockService {
             throw new ClientExceptionWithBody(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "INTERNAL SERVER ERROR",
-                    "Error during encryption");
+                    "Error during encryption", e);
         }
         return userId;
     }

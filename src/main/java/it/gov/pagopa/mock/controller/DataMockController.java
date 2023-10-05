@@ -3,7 +3,6 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import it.gov.pagopa.mock.dto.SaveIseeRequestDTO;
-import it.gov.pagopa.mock.model.MockedIsee;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +11,7 @@ import java.util.Set;
 
 @Validated
 @RequestMapping("/idpay/mock")
-public interface PdndMockController {
+public interface DataMockController {
     @GetMapping("/family/user/{userId}")
     Family getFamilyForUser(@PathVariable String userId);
 
@@ -23,5 +22,5 @@ public interface PdndMockController {
     Residence getResidenceForUser(@PathVariable String userId);
 
     @PostMapping("/isee")
-    MockedIsee saveIsee(@RequestHeader("Fiscal-Code") String fiscalCode, @RequestBody SaveIseeRequestDTO iseeRequestDTO);
+    void saveIsee(@RequestHeader("Fiscal-Code") String fiscalCode, @RequestBody SaveIseeRequestDTO iseeRequestDTO);
 }

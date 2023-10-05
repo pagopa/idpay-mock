@@ -7,7 +7,7 @@ import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.mapper.AnprMapperFaker;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,11 +19,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-    @Disabled
+    @Test
     void getAnprResidence() {
         AnprResponseDTO residenceResult = null;
 

@@ -22,6 +22,7 @@ class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
     ObjectMapper objectMapper;
     @Autowired
     MockMvc mockMvc;
+
     @Disabled
     void getAnprResidence() {
         AnprResponseDTO residenceResult = null;
@@ -39,7 +40,7 @@ class AnprMockControllerIntegrationTest extends BaseIntegrationTest {
 
     protected MvcResult getAnprResidence(AnprRequestDTO anprRequestDTO) throws Exception {
         return mockMvc
-                .perform(post("/idpay/anpr/mock/residence", anprRequestDTO)
+                .perform(post("/idpay/mock/anpr/C001-servizioNotifica/v1/anpr-service-e002", anprRequestDTO)
                         .content(objectMapper.writeValueAsString(anprRequestDTO))
                         .contentType(MediaType.APPLICATION_JSON)
                 )

@@ -2,35 +2,43 @@ package it.gov.pagopa.mock.controller;
 
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
+import it.gov.pagopa.mock.dto.SaveIseeRequestDTO;
+import it.gov.pagopa.mock.model.MockedIsee;
 import it.gov.pagopa.mock.service.PdndApiMockService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import it.gov.pagopa.mock.service.isee.IseeMockService;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 
-@Controller
+@RestController
 public class PdndMockControllerImpl implements PdndMockController {
     private final PdndApiMockService pdndApiMockService;
+    private final IseeMockService iseeMockService;
 
-    public PdndMockControllerImpl(PdndApiMockService pdndApiMockService) {
+    public PdndMockControllerImpl(PdndApiMockService pdndApiMockService, IseeMockService iseeMockService) {
         this.pdndApiMockService = pdndApiMockService;
+        this.iseeMockService = iseeMockService;
     }
 
 
     @Override
-    public ResponseEntity<Family> getFamilyForUser(String userId) {
-        return ResponseEntity.ok(pdndApiMockService.getFamilyForUser(userId));
+    public Family getFamilyForUser(String userId) {
+        return pdndApiMockService.getFamilyForUser(userId);
     }
 
     @Override
-    public ResponseEntity<Family> upsertFamilyUnit(String familyId, Set<String> userIds){
-        return new ResponseEntity<>(pdndApiMockService.upsertFamilyUnit(familyId, userIds), HttpStatus.OK);
+    public Family upsertFamilyUnit(String familyId, Set<String> userIds){
+        return pdndApiMockService.upsertFamilyUnit(familyId, userIds);
     }
 
 
     @Override
-    public ResponseEntity<Residence> getResidenceForUser(String userId) {
-        return ResponseEntity.ok(pdndApiMockService.getResidenceForUser(userId));
+    public Residence getResidenceForUser(String userId) {
+        return pdndApiMockService.getResidenceForUser(userId);
+    }
+
+    @Override
+    public MockedIsee saveIsee(String fiscalCode, SaveIseeRequestDTO iseeRequestDTO) {
+        return iseeMockService.saveIsee(fiscalCode, iseeRequestDTO.getIseeTypeMap());
     }
 }

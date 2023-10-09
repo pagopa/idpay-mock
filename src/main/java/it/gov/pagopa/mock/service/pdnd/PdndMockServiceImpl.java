@@ -22,8 +22,8 @@ public class PdndMockServiceImpl implements PdndMockService {
     public static final String EXPECTED_CLIENT_ASSERTION_TYPE = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
     public static final String EXPECTED_GRANT_TYPE = "client_credentials";
 
-    public static final String FAKE_ACCESS_TOKEN_HEADER = "eyJ0eXAiOiJhdCtqd3QiLCJhbGciOiJSUzI1NiIsInVzZSI6InNpZyIsImtpZCI6IjMyZDhhMzIxLTE1NjgtNDRmNS05NTU4LWE5MDcyZjUxOWQyZCJ9";
-    public static final String FAKE_ACCESS_TOKEN_SIGN = "Lq-b9r9LHgbAFNyFcCHiIvbvBh9YznIrw3Cr-kpcCC4qflshsEYbhfNlXn4d5n_bwAsFPaFpwbi64zfUn60Ly5vuQTRs_QL01CciIrA1F-XYhgy6n3qYgUI5rQA0w9yxo0k2iOVViX2yXo27W9Cv0rTDsT4Pa6KcfV7-Q1o0JtJZfNulf38hv99hGm8AyNLCcLMFGOpPZzzXBE8TqTtmfQsoxFCUNcniHFIyRoMpI1hWlWRE0SzWAVqbpq4gEcCUKNpCtNF4FVGR0kJ52eob5IPa2bqByFtec4aL-KEI1Kh4InMtMDelQE9vrTJGTmua8YY4e_VW-aH9weFNammSkg";
+    public static final String FAKE_JWT_HEADER = "eyJ0eXAiOiJhdCtqd3QiLCJhbGciOiJSUzI1NiIsInVzZSI6InNpZyIsImtpZCI6IjMyZDhhMzIxLTE1NjgtNDRmNS05NTU4LWE5MDcyZjUxOWQyZCJ9";
+    public static final String FAKE_JWT_SIGN = "Lq-b9r9LHgbAFNyFcCHiIvbvBh9YznIrw3Cr-kpcCC4qflshsEYbhfNlXn4d5n_bwAsFPaFpwbi64zfUn60Ly5vuQTRs_QL01CciIrA1F-XYhgy6n3qYgUI5rQA0w9yxo0k2iOVViX2yXo27W9Cv0rTDsT4Pa6KcfV7-Q1o0JtJZfNulf38hv99hGm8AyNLCcLMFGOpPZzzXBE8TqTtmfQsoxFCUNcniHFIyRoMpI1hWlWRE0SzWAVqbpq4gEcCUKNpCtNF4FVGR0kJ52eob5IPa2bqByFtec4aL-KEI1Kh4InMtMDelQE9vrTJGTmua8YY4e_VW-aH9weFNammSkg";
 
     private final ObjectMapper objectMapper;
     private final String expectedAudience;
@@ -41,7 +41,7 @@ public class PdndMockServiceImpl implements PdndMockService {
         if (!CollectionUtils.isEmpty(claims)) {
             log.info("[PDND_MOCK] createToken request OK: clientId={} clientAssertion={}",
                     clientId, clientAssertion);
-            return new ClientCredentialsResponseDTO(FAKE_ACCESS_TOKEN_HEADER + "." + createClaims(claims) + "." + FAKE_ACCESS_TOKEN_SIGN, TokenTypeDTO.BEARER, 600);
+            return new ClientCredentialsResponseDTO(FAKE_JWT_HEADER + "." + createClaims(claims) + "." + FAKE_JWT_SIGN, TokenTypeDTO.BEARER, 600);
         } else {
             log.error("[PDND_MOCK] Unexpected createToken request: clientId={} clientAssertion={} clientAssertionType={} grantType={}",
                     clientId, clientAssertion,

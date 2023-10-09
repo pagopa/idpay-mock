@@ -5,6 +5,7 @@ import it.gov.pagopa.common.web.exception.ClientExceptionWithBody;
 import it.gov.pagopa.mock.connector.encrypt.EncryptRestConnector;
 import it.gov.pagopa.mock.dto.CFDTO;
 import it.gov.pagopa.mock.dto.EncryptedCfDTO;
+import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import it.gov.pagopa.mock.model.MockedIsee;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -43,12 +45,28 @@ public class IseeMockServiceImpl implements IseeMockService {
     }
 
     @Override
-    public MockedIsee saveIsee(String fiscalCode, Map<TipoIndicatoreSinteticoEnum, BigDecimal> iseeTypes) {
+    public MockedIsee saveIsee(String fiscalCode, Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
         log.debug("[SAVE_ISEE] Save isee");
         String userId = encryptCF(fiscalCode);
         log.info("[SAVE_ISEE] Save isee for userId {}", userId);
 
-        return mongoTemplate.save(new MockedIsee(userId, iseeTypes));
+        return mongoTemplate.save(new MockedIsee(userId, transcodeIseeTypes(iseeTypes)));
+    }
+
+    private static final Map<IseeTypologyEnum, TipoIndicatoreSinteticoEnum> iseeTypesMap = Map.of(
+            IseeTypologyEnum.ORDINARIO, TipoIndicatoreSinteticoEnum.ORDINARIO,
+            IseeTypologyEnum.MINORENNE, TipoIndicatoreSinteticoEnum.MINORENNE,
+            IseeTypologyEnum.UNIVERSITARIO, TipoIndicatoreSinteticoEnum.UNIVERSITARIO,
+            IseeTypologyEnum.SOCIOSANITARIO, TipoIndicatoreSinteticoEnum.SOCIO_SANITARIO,
+            IseeTypologyEnum.DOTTORATO, TipoIndicatoreSinteticoEnum.DOTTORATO,
+            IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreSinteticoEnum.RESIDENZIALE
+    );
+    private Map<TipoIndicatoreSinteticoEnum, BigDecimal> transcodeIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
+        return iseeTypes.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> iseeTypesMap.get(e.getKey()),
+                        Map.Entry::getValue
+                ));
     }
 
     private MockedIsee searchMockCollection(String userId) {

@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.dto;
 
-import it.gov.pagopa.admissibility.generated.soap.ws.client.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -12,5 +12,5 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SaveIseeRequestDTO {
-    private Map<TipoIndicatoreSinteticoEnum, BigDecimal> iseeTypeMap;
+    private Map<IseeTypologyEnum, BigDecimal> iseeTypeMap;
 }

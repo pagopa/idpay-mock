@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.controller;
 
-import it.gov.pagopa.admissibility.generated.soap.ws.client.*;
+import it.gov.pagopa.mock.wsimport.inps.*;
 import it.gov.pagopa.mock.service.isee.IseeMockService;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;

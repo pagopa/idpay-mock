@@ -3,7 +3,7 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import it.gov.pagopa.mock.dto.SaveIseeRequestDTO;
-import it.gov.pagopa.mock.service.PdndApiMockService;
+import it.gov.pagopa.mock.service.DataMockService;
 import it.gov.pagopa.mock.service.isee.IseeMockService;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,29 +11,29 @@ import java.util.Set;
 
 @RestController
 public class DataMockControllerImpl implements DataMockController {
-    private final PdndApiMockService pdndApiMockService;
+    private final DataMockService dataMockService;
     private final IseeMockService iseeMockService;
 
-    public DataMockControllerImpl(PdndApiMockService pdndApiMockService, IseeMockService iseeMockService) {
-        this.pdndApiMockService = pdndApiMockService;
+    public DataMockControllerImpl(DataMockService dataMockService, IseeMockService iseeMockService) {
+        this.dataMockService = dataMockService;
         this.iseeMockService = iseeMockService;
     }
 
 
     @Override
     public Family getFamilyForUser(String userId) {
-        return pdndApiMockService.getFamilyForUser(userId);
+        return dataMockService.getFamilyForUser(userId);
     }
 
     @Override
     public Family upsertFamilyUnit(String familyId, Set<String> userIds){
-        return pdndApiMockService.upsertFamilyUnit(familyId, userIds);
+        return dataMockService.upsertFamilyUnit(familyId, userIds);
     }
 
 
     @Override
     public Residence getResidenceForUser(String userId) {
-        return pdndApiMockService.getResidenceForUser(userId);
+        return dataMockService.getResidenceForUser(userId);
     }
 
     @Override

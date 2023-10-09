@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.service.isee;
 
-import it.gov.pagopa.admissibility.generated.soap.ws.client.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
 import it.gov.pagopa.common.web.exception.ClientExceptionWithBody;
 import it.gov.pagopa.mock.connector.encrypt.EncryptRestConnector;
 import it.gov.pagopa.mock.dto.CFDTO;

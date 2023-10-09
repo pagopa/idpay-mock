@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.model;
 
-import it.gov.pagopa.admissibility.generated.soap.ws.client.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

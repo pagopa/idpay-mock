@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.service.isee;
 
-import it.gov.pagopa.admissibility.generated.soap.ws.client.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
 import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import it.gov.pagopa.mock.model.MockedIsee;
 

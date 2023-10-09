@@ -1,7 +1,6 @@
 package it.gov.pagopa.mock.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.admissibility.generated.soap.ws.client.TipoIndicatoreSinteticoEnum;
 import it.gov.pagopa.common.utils.TestUtils;
 import it.gov.pagopa.common.web.dto.ErrorDTO;
 import it.gov.pagopa.common.web.mockmvc.MockMvcUtils;
@@ -9,6 +8,7 @@ import it.gov.pagopa.mock.BaseIntegrationTest;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.Residence;
 import it.gov.pagopa.mock.dto.SaveIseeRequestDTO;
+import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import it.gov.pagopa.mock.model.MockedFamily;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -196,7 +196,14 @@ class DataMockControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void storeIsee() {
-        storeIsee(mockMvc, objectMapper, "CF_OK", new SaveIseeRequestDTO(Map.of(TipoIndicatoreSinteticoEnum.ORDINARIO, BigDecimal.TEN)));
+        storeIsee(mockMvc, objectMapper, "CF_OK", new SaveIseeRequestDTO(Map.of(
+                IseeTypologyEnum.ORDINARIO, BigDecimal.TEN,
+                IseeTypologyEnum.MINORENNE, BigDecimal.TEN,
+                IseeTypologyEnum.UNIVERSITARIO, BigDecimal.TEN,
+                IseeTypologyEnum.SOCIOSANITARIO, BigDecimal.TEN,
+                IseeTypologyEnum.DOTTORATO, BigDecimal.TEN,
+                IseeTypologyEnum.RESIDENZIALE, BigDecimal.TEN
+        )));
     }
 
     public static void storeIsee(MockMvc mockMvc, ObjectMapper objectMapper, String cf, SaveIseeRequestDTO saveIseeRequestDTO) {

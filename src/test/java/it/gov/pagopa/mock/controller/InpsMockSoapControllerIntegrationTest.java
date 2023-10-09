@@ -3,6 +3,7 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.admissibility.generated.soap.ws.client.*;
 import it.gov.pagopa.mock.BaseIntegrationTest;
 import it.gov.pagopa.mock.dto.SaveIseeRequestDTO;
+import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -37,7 +38,7 @@ public class InpsMockSoapControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void test(){
-        DataMockControllerIntegrationTest.storeIsee(mockMvc, objectMapper, "CF", new SaveIseeRequestDTO(Map.of(TipoIndicatoreSinteticoEnum.ORDINARIO, BigDecimal.TEN)));
+        DataMockControllerIntegrationTest.storeIsee(mockMvc, objectMapper, "CF", new SaveIseeRequestDTO(Map.of(IseeTypologyEnum.ORDINARIO, BigDecimal.TEN)));
 
         ConsultazioneIndicatoreResponse result = inpsMockSoapController.consultazioneIndicatore(buildRequest("CF", TipoIndicatoreSinteticoEnum.ORDINARIO));
         Assertions.assertNotNull(result);

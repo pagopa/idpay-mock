@@ -60,6 +60,7 @@ public class IseeMockServiceImpl implements IseeMockService {
             IseeTypologyEnum.SOCIOSANITARIO, TipoIndicatoreSinteticoEnum.SOCIO_SANITARIO,
             IseeTypologyEnum.DOTTORATO, TipoIndicatoreSinteticoEnum.DOTTORATO,
             IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreSinteticoEnum.RESIDENZIALE
+            // IseeTypologyEnum.CORRENTE not mapped
     );
     private Map<TipoIndicatoreSinteticoEnum, BigDecimal> transcodeIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
         return iseeTypes.entrySet().stream()

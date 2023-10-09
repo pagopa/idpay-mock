@@ -41,6 +41,7 @@ public class InpsMockSoapController {
                 request.getRequest().getTipoIndicatore()
         );
         if(isee!=null){
+            log.info("[MOCK_INPS] Returning mocked ISEE for fiscalCode={} iseeType={}: {}", request.getRequest().getRicercaCF().getCodiceFiscale(), request.getRequest().getTipoIndicatore(), isee);
             ConsultazioneIndicatoreResponse result = new ConsultazioneIndicatoreResponse();
             ConsultazioneIndicatoreResponseType value = new ConsultazioneIndicatoreResponseType();
             value.setEsito(EsitoEnum.OK);

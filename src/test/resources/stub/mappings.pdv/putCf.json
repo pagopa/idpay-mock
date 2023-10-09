@@ -1,0 +1,31 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPathPattern": "/tokens",
+    "headers": {
+      "x-api-key": {
+        "matches": "x_api_key[0-9]*"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "pii": "${json-unit.any-string}"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": "200",
+    "transformers": [
+      "response-template"
+    ],
+    "jsonBody": {
+      "token": "TOKENIZED_{{jsonPath request.body '$.pii'}}"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Connection": "close"
+    }
+  }
+}

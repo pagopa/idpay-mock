@@ -42,3 +42,8 @@ api.key.encrypt: ${PDV_ENCRYPT_API_KEY:}
 management.endpoints:
   web:
     exposure.include: info, health
+
+mocks:
+  pdnd:
+    expected:
+      audience: ${PDND_MOCK_EXPECTED_AUDIENCE:auth.uat.interop.pagopa.it/client-assertion}

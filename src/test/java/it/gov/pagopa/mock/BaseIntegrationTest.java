@@ -24,8 +24,12 @@ import org.springframework.test.web.servlet.MockMvc;
                 "logging.level.de.flapdoodle.embed.mongo.spring.autoconfigure=WARN",
                 "de.flapdoodle.mongodb.embedded.version=4.0.21",
                 // endregion
+
+                //region pdv
                 "logging.level.WireMock=ERROR",
                 "rest-client.encryptpdv.baseUrl=http://localhost:${wiremock.server.port}",
+                "api.key.encrypt=x_api_key",
+                //endregion
 
         })
 @AutoConfigureMockMvc

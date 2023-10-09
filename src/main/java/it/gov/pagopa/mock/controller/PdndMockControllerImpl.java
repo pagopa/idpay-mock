@@ -1,36 +1,32 @@
 package it.gov.pagopa.mock.controller;
 
-import it.gov.pagopa.mock.dto.Family;
-import it.gov.pagopa.mock.dto.Residence;
-import it.gov.pagopa.mock.service.PdndApiMockService;
-import org.springframework.http.HttpStatus;
+import it.gov.pagopa.mock.openapi.pdnd.api.TokenOauth2Api;
+import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
+import it.gov.pagopa.mock.service.pdnd.PdndMockService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+@Slf4j
+@RestController
+@RequestMapping("/idpay/mock/pdnd")
+public class PdndMockControllerImpl implements TokenOauth2Api {
 
-@Controller
-public class PdndMockControllerImpl implements PdndMockController {
-    private final PdndApiMockService pdndApiMockService;
+    private final PdndMockService pdndMockService;
 
-    public PdndMockControllerImpl(PdndApiMockService pdndApiMockService) {
-        this.pdndApiMockService = pdndApiMockService;
-    }
-
-
-    @Override
-    public ResponseEntity<Family> getFamilyForUser(String userId) {
-        return ResponseEntity.ok(pdndApiMockService.getFamilyForUser(userId));
+    public PdndMockControllerImpl(PdndMockService pdndMockService) {
+        this.pdndMockService = pdndMockService;
     }
 
     @Override
-    public ResponseEntity<Family> upsertFamilyUnit(String familyId, Set<String> userIds){
-        return new ResponseEntity<>(pdndApiMockService.upsertFamilyUnit(familyId, userIds), HttpStatus.OK);
-    }
-
-
-    @Override
-    public ResponseEntity<Residence> getResidenceForUser(String userId) {
-        return ResponseEntity.ok(pdndApiMockService.getResidenceForUser(userId));
+    public ResponseEntity<ClientCredentialsResponseDTO> createToken(String clientAssertion, String clientAssertionType, String grantType, String clientId) {
+        ClientCredentialsResponseDTO token = pdndMockService.createToken(clientAssertion, clientAssertionType, grantType, clientId);
+        if(token!=null){
+            log.info("[MOCK_PDND] Returning PDND fake accessToken for clientId {} and clientAssertion {}", clientId, clientAssertion);
+            return ResponseEntity.ok(token);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

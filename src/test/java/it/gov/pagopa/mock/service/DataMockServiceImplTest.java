@@ -21,17 +21,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
-@ContextConfiguration(classes = PdndApiMockServiceImpl.class)
-public class PdndApiMockServiceImplTest {
+@ContextConfiguration(classes = DataMockServiceImpl.class)
+class DataMockServiceImplTest {
 
     @MockBean
-    ResidenceMockGeneratorService residenceMockGeneratorService;
+    private ResidenceMockGeneratorService residenceMockGeneratorService;
 
     @MockBean
-    FamilyMockGeneratorService familyMockGeneratorService;
+    private FamilyMockGeneratorService familyMockGeneratorService;
 
     @Autowired
-    PdndApiMockService pdndApiMockService;
+    private DataMockService dataMockService;
 
     @Test
     void upsertFamilyUnit(){
@@ -45,7 +45,7 @@ public class PdndApiMockServiceImplTest {
 
         when(familyMockGeneratorService.upsertFamilyUnit(any(), any())).thenReturn(family);
 
-        Family result = pdndApiMockService.upsertFamilyUnit(null, userIds);
+        Family result = dataMockService.upsertFamilyUnit(null, userIds);
 
         Assertions.assertEquals(1, result.getMemberIds().size());
     }
@@ -56,7 +56,7 @@ public class PdndApiMockServiceImplTest {
         userIds.add("");
 
         try{
-            pdndApiMockService.upsertFamilyUnit(null, userIds);
+            dataMockService.upsertFamilyUnit(null, userIds);
         }catch (ClientExceptionWithBody e){
             Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getHttpStatus());
         }

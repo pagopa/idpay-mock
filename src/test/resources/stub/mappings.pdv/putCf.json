@@ -24,7 +24,8 @@
       "token": "TOKENIZED_{{jsonPath request.body '$.pii'}}"
     },
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Connection": "close"
     }
   }
 }

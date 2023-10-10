@@ -1,12 +1,12 @@
 package it.gov.pagopa.mock.service.isee;
 
-import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
 import it.gov.pagopa.common.web.exception.ClientExceptionWithBody;
 import it.gov.pagopa.mock.connector.encrypt.EncryptRestConnector;
 import it.gov.pagopa.mock.dto.CFDTO;
 import it.gov.pagopa.mock.dto.EncryptedCfDTO;
 import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import it.gov.pagopa.mock.model.MockedIsee;
+import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
@@ -38,7 +38,7 @@ public class IseeMockServiceImpl implements IseeMockService {
         MockedIsee isee = searchMockCollection(userId);
 
         if (isee != null) {
-            return isee.getIseeTypeMap().get(iseeType);
+            return isee.getIseeTypeMap().get(iseeTypesMapReverse.get(iseeType));
         } else {
             return null;
         }
@@ -50,7 +50,8 @@ public class IseeMockServiceImpl implements IseeMockService {
         String userId = encryptCF(fiscalCode);
         log.info("[SAVE_ISEE] Save isee for userId {}", userId);
 
-        return mongoTemplate.save(new MockedIsee(userId, transcodeIseeTypes(iseeTypes)));
+        validateIseeTypes(iseeTypes);
+        return mongoTemplate.save(new MockedIsee(userId, iseeTypes));
     }
 
     private static final Map<IseeTypologyEnum, TipoIndicatoreSinteticoEnum> iseeTypesMap = Map.of(
@@ -62,12 +63,15 @@ public class IseeMockServiceImpl implements IseeMockService {
             IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreSinteticoEnum.RESIDENZIALE
             // IseeTypologyEnum.CORRENTE not mapped
     );
-    private Map<TipoIndicatoreSinteticoEnum, BigDecimal> transcodeIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
-        return iseeTypes.entrySet().stream()
-                .collect(Collectors.toMap(
-                        e -> iseeTypesMap.get(e.getKey()),
-                        Map.Entry::getValue
-                ));
+    private static final Map<TipoIndicatoreSinteticoEnum, IseeTypologyEnum> iseeTypesMapReverse = iseeTypesMap.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+
+    private void validateIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
+        iseeTypes.keySet().forEach(i -> {
+            if(iseeTypesMap.get(i)==null){
+                throw new IllegalArgumentException("ISEE type not handled: " + i);
+            }
+        });
     }
 
     private MockedIsee searchMockCollection(String userId) {

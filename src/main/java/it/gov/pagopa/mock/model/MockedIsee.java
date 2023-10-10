@@ -1,6 +1,6 @@
 package it.gov.pagopa.mock.model;
 
-import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +22,5 @@ public class MockedIsee {
 
     @Id
     private String userId;
-    private Map<TipoIndicatoreSinteticoEnum, BigDecimal> iseeTypeMap;
+    private Map<IseeTypologyEnum, BigDecimal> iseeTypeMap;
 }

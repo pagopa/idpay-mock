@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,11 +37,29 @@ public class IseeMockServiceImpl implements IseeMockService {
 
         MockedIsee isee = searchMockCollection(userId);
 
+        Map<IseeTypologyEnum, BigDecimal> iseeTypes;
         if (isee != null) {
-            return isee.getIseeTypeMap().get(iseeTypesMapReverse.get(iseeType));
+            iseeTypes = isee.getIseeTypeMap();
         } else {
-            return null;
+            iseeTypes = generateMockIsee(userId);
         }
+        return iseeTypes.get(iseeTypesMapReverse.get(iseeType));
+    }
+
+    private Map<IseeTypologyEnum, BigDecimal> generateMockIsee(String userId) {
+        log.info("[RERIEVE_ISEE] ISEE of user {} not found in collection mocked_isee, genereting a fake one",
+                userId);
+
+        Map<IseeTypologyEnum, BigDecimal> iseeMockMap = new EnumMap<>(IseeTypologyEnum.class);
+        List<IseeTypologyEnum> iseeList = Arrays.asList(IseeTypologyEnum.values());
+
+        int randomTypology = new Random(userId.hashCode()).nextInt(1, iseeList.size()+1);
+        for (int i = 0; i < randomTypology; i++) {
+            Random value = new Random((userId + iseeList.get(i)).hashCode());
+            iseeMockMap.put(iseeList.get(i), new BigDecimal(value.nextInt(1_000, 100_000)));
+        }
+
+        return iseeMockMap;
     }
 
     @Override

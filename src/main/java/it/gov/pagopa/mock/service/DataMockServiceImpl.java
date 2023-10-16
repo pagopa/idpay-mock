@@ -13,11 +13,11 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class PdndApiMockServiceImpl implements PdndApiMockService {
+public class DataMockServiceImpl implements DataMockService {
     private final FamilyMockGeneratorService familyMockGeneratorService;
     private final ResidenceMockGeneratorService residenceMockGeneratorService;
 
-    public PdndApiMockServiceImpl(FamilyMockGeneratorService familyMockGeneratorService, ResidenceMockGeneratorService residenceMockGeneratorService) {
+    public DataMockServiceImpl(FamilyMockGeneratorService familyMockGeneratorService, ResidenceMockGeneratorService residenceMockGeneratorService) {
         this.familyMockGeneratorService = familyMockGeneratorService;
         this.residenceMockGeneratorService = residenceMockGeneratorService;
     }

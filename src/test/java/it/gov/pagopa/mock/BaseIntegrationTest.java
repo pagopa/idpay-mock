@@ -3,6 +3,7 @@ package it.gov.pagopa.mock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import it.gov.pagopa.common.mongo.MongoTestUtilitiesService;
+import it.gov.pagopa.common.mongo.singleinstance.AutoConfigureSingleInstanceMongodb;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
                 // region mongodb
                 "logging.level.org.mongodb.driver=WARN",
                 "logging.level.de.flapdoodle.embed.mongo.spring.autoconfigure=WARN",
-                "de.flapdoodle.mongodb.embedded.version=4.0.21",
+                "de.flapdoodle.mongodb.embedded.version=4.2.24",
                 // endregion
 
                 //region pdv
@@ -34,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
         })
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(stubs = "classpath:/stub", port = 0)
+@AutoConfigureSingleInstanceMongodb
 public abstract class BaseIntegrationTest {
     @Autowired
     protected MockMvc mockMvc;

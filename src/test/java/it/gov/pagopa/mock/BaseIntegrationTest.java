@@ -16,10 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @TestPropertySource(
         properties = {
-                // even if enabled into application.yml, spring test will not load it
-                // https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.testing.spring-boot-applications.jmx
-                "spring.jmx.enabled=true",
-
                 // region mongodb
                 "logging.level.org.mongodb.driver=WARN",
                 "logging.level.de.flapdoodle.embed.mongo.spring.autoconfigure=WARN",
@@ -31,7 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
                 "rest-client.encryptpdv.baseUrl=http://localhost:${wiremock.server.port}",
                 "api.key.encrypt=x_api_key",
                 //endregion
-
         })
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(stubs = "classpath:/stub", port = 0)

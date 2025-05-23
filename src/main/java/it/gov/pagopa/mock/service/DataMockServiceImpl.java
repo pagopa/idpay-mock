@@ -14,6 +14,7 @@ import java.util.Set;
 @Service
 @Slf4j
 public class DataMockServiceImpl implements DataMockService {
+    
     private final FamilyMockGeneratorService familyMockGeneratorService;
     private final ResidenceMockGeneratorService residenceMockGeneratorService;
 

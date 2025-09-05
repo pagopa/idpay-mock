@@ -29,7 +29,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void consultazioneIndicatore_ShouldReturnOk_WhenIseeBelowThreshold() {
+    void consultazioneSogliaIndicatore_ShouldReturnOk_WhenIseeBelowThreshold() {
         String cf = "RSSMRA80A01H501U";
         BigDecimal mockedIsee = BigDecimal.valueOf(9000);
 
@@ -40,7 +40,7 @@ class InpsMockSoapControllerIntegrationTest {
         reqType.setCodiceFiscale(cf);
         request.setRequest(reqType);
 
-        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneSogliaIndicatore(request);
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
@@ -50,7 +50,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void consultazioneIndicatore_ShouldReturnInvalid_WhenIseeAboveThreshold() {
+    void consultazioneSogliaIndicatore_ShouldReturnInvalid_WhenIseeAboveThreshold() {
         String cf = "RSSMRA80A01H501U";
         BigDecimal mockedIsee = BigDecimal.valueOf(30000);
 
@@ -61,7 +61,7 @@ class InpsMockSoapControllerIntegrationTest {
         reqType.setCodiceFiscale(cf);
         request.setRequest(reqType);
 
-        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneSogliaIndicatore(request);
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
@@ -71,7 +71,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void consultazioneIndicatore_ShouldReturnNoData_WhenIseeNotFound() {
+    void consultazioneSogliaIndicatore_ShouldReturnNoData_WhenIseeNotFound() {
         String cf = "RSSMRA80A01H501U";
 
         when(iseeMockService.retrieveIsee(cf, null)).thenReturn(null);
@@ -81,7 +81,7 @@ class InpsMockSoapControllerIntegrationTest {
         reqType.setCodiceFiscale(cf);
         request.setRequest(reqType);
 
-        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneSogliaIndicatore(request);
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
@@ -105,7 +105,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void toByteArray_ShouldSerializeTypeEsitoConsultazioneIndicatore() {
+    void toByteArray_ShouldSerializeTypeEsitoConsultazioneSogliaIndicatore() {
         TypeEsitoConsultazioneIndicatore indicatore = new TypeEsitoConsultazioneIndicatore();
         indicatore.setISEE(BigDecimal.valueOf(6789));
 
@@ -162,7 +162,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void consultazioneIndicatore_ShouldReturnInvalid_WhenIseeEqualsThreshold() {
+    void consultazioneSogliaIndicatore_ShouldReturnInvalid_WhenIseeEqualsThreshold() {
         String cf = "RSSMRA80A01H501U";
         BigDecimal mockedIsee = BigDecimal.valueOf(25000);
 
@@ -173,7 +173,7 @@ class InpsMockSoapControllerIntegrationTest {
         reqType.setCodiceFiscale(cf);
         request.setRequest(reqType);
 
-        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneSogliaIndicatore(request);
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();

@@ -43,9 +43,9 @@ public class InpsMockSoapController {
         noIseeResult.setConsultazioneSogliaIndicatoreResult(value);
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "ConsultazioneIndicatore")
+    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "ConsultazioneSogliaIndicatore")
     @ResponsePayload
-    public ConsultazioneSogliaIndicatoreResponse consultazioneIndicatore(
+    public ConsultazioneSogliaIndicatoreResponse consultazioneSogliaIndicatore(
             @RequestPayload ConsultazioneSogliaIndicatore request) {
 
         BigDecimal isee = iseeMockService.retrieveIsee(

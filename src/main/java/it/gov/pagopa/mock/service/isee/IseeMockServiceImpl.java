@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -36,14 +35,18 @@ public class IseeMockServiceImpl implements IseeMockService {
         log.info("[RETRIEVE_ISEE] Retrieve isee for userId {}", userId);
 
         MockedIsee isee = searchMockCollection(userId);
-
         Map<IseeTypologyEnum, BigDecimal> iseeTypes;
-        if (isee != null) {
+        if (isee != null && isee.getIseeTypeMap() != null && !isee.getIseeTypeMap().isEmpty()) {
             iseeTypes = isee.getIseeTypeMap();
         } else {
             iseeTypes = generateMockIsee(userId);
         }
-        return iseeTypes.get(iseeTypesMapReverse.get(iseeType));
+
+        return iseeTypes.values()
+                .stream()
+                .filter(Objects::nonNull)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
     }
 
     private Map<IseeTypologyEnum, BigDecimal> generateMockIsee(String userId) {
@@ -82,8 +85,7 @@ public class IseeMockServiceImpl implements IseeMockService {
             IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreEnum.ISEE_RESIDENZIALE_RIDOTTO_CON_FIGLI_AGGIUNTIVI
             // IseeTypologyEnum.CORRENTE not mapped
     );
-    private static final Map<TipoIndicatoreEnum, IseeTypologyEnum> iseeTypesMapReverse = iseeTypesMap.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+
 
     private void validateIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
         iseeTypes.keySet().forEach(i -> {

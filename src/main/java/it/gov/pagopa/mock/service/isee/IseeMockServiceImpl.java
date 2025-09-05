@@ -47,21 +47,16 @@ public class IseeMockServiceImpl implements IseeMockService {
     }
 
     private Map<IseeTypologyEnum, BigDecimal> generateMockIsee(String userId) {
-        log.info("[RETRIEVE_ISEE] ISEE of user {} not found in collection mocked_isee, generating a fake one", userId);
+        log.info("[RERIEVE_ISEE] ISEE of user {} not found in collection mocked_isee, genereting a fake one",
+                userId);
 
         Map<IseeTypologyEnum, BigDecimal> iseeMockMap = new EnumMap<>(IseeTypologyEnum.class);
         List<IseeTypologyEnum> iseeList = Arrays.asList(IseeTypologyEnum.values());
 
-        int randomTypology = new Random(userId.hashCode()).nextInt(1, iseeList.size() + 1);
+        int randomTypology = new Random(userId.hashCode()).nextInt(1, iseeList.size()+1);
         for (int i = 0; i < randomTypology; i++) {
             Random value = new Random((userId + iseeList.get(i)).hashCode());
-            int generatedValue;
-            if (value.nextBoolean()) {
-                generatedValue = value.nextInt(1, 24_999);
-            } else {
-                generatedValue = value.nextInt(25_000, 100_001);
-            }
-            iseeMockMap.put(iseeList.get(i), BigDecimal.valueOf(generatedValue));
+            iseeMockMap.put(iseeList.get(i), new BigDecimal(value.nextInt(1_000, 100_000)));
         }
 
         return iseeMockMap;

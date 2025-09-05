@@ -6,7 +6,7 @@ import it.gov.pagopa.mock.dto.CFDTO;
 import it.gov.pagopa.mock.dto.EncryptedCfDTO;
 import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import it.gov.pagopa.mock.model.MockedIsee;
-import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,7 @@ public class IseeMockServiceImpl implements IseeMockService {
     }
 
     @Override
-    public BigDecimal retrieveIsee(String fiscalCode, TipoIndicatoreSinteticoEnum iseeType) {
+    public BigDecimal retrieveIsee(String fiscalCode, TipoIndicatoreEnum iseeType) {
         log.debug("[RETRIEVE_ISEE] Retrieve isee");
         String userId = encryptCF(fiscalCode);
         log.info("[RETRIEVE_ISEE] Retrieve isee for userId {}", userId);
@@ -47,20 +47,26 @@ public class IseeMockServiceImpl implements IseeMockService {
     }
 
     private Map<IseeTypologyEnum, BigDecimal> generateMockIsee(String userId) {
-        log.info("[RERIEVE_ISEE] ISEE of user {} not found in collection mocked_isee, genereting a fake one",
-                userId);
+        log.info("[RETRIEVE_ISEE] ISEE of user {} not found in collection mocked_isee, generating a fake one", userId);
 
         Map<IseeTypologyEnum, BigDecimal> iseeMockMap = new EnumMap<>(IseeTypologyEnum.class);
         List<IseeTypologyEnum> iseeList = Arrays.asList(IseeTypologyEnum.values());
 
-        int randomTypology = new Random(userId.hashCode()).nextInt(1, iseeList.size()+1);
+        int randomTypology = new Random(userId.hashCode()).nextInt(1, iseeList.size() + 1);
         for (int i = 0; i < randomTypology; i++) {
             Random value = new Random((userId + iseeList.get(i)).hashCode());
-            iseeMockMap.put(iseeList.get(i), new BigDecimal(value.nextInt(1_000, 100_000)));
+            int generatedValue;
+            if (value.nextBoolean()) {
+                generatedValue = value.nextInt(1, 24_999);
+            } else {
+                generatedValue = value.nextInt(25_000, 100_001);
+            }
+            iseeMockMap.put(iseeList.get(i), BigDecimal.valueOf(generatedValue));
         }
 
         return iseeMockMap;
     }
+
 
     @Override
     public MockedIsee saveIsee(String fiscalCode, Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
@@ -72,16 +78,16 @@ public class IseeMockServiceImpl implements IseeMockService {
         return mongoTemplate.save(new MockedIsee(userId, iseeTypes));
     }
 
-    private static final Map<IseeTypologyEnum, TipoIndicatoreSinteticoEnum> iseeTypesMap = Map.of(
-            IseeTypologyEnum.ORDINARIO, TipoIndicatoreSinteticoEnum.ORDINARIO,
-            IseeTypologyEnum.MINORENNE, TipoIndicatoreSinteticoEnum.MINORENNE,
-            IseeTypologyEnum.UNIVERSITARIO, TipoIndicatoreSinteticoEnum.UNIVERSITARIO,
-            IseeTypologyEnum.SOCIOSANITARIO, TipoIndicatoreSinteticoEnum.SOCIO_SANITARIO,
-            IseeTypologyEnum.DOTTORATO, TipoIndicatoreSinteticoEnum.DOTTORATO,
-            IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreSinteticoEnum.RESIDENZIALE
+    private static final Map<IseeTypologyEnum, TipoIndicatoreEnum> iseeTypesMap = Map.of(
+            IseeTypologyEnum.ORDINARIO, TipoIndicatoreEnum.ISEE_ORDINARIO,
+            IseeTypologyEnum.MINORENNE, TipoIndicatoreEnum.ISEE_MINORENNE_ORDINARIO,
+            IseeTypologyEnum.UNIVERSITARIO, TipoIndicatoreEnum.ISEE_UNIVERSITARIO_ORDINARIO,
+            IseeTypologyEnum.SOCIOSANITARIO, TipoIndicatoreEnum.ISEE_SOCIOSANITARIO_RIDOTTO,
+            IseeTypologyEnum.DOTTORATO, TipoIndicatoreEnum.ISEE_DOTTORATO_RICERCA_RIDOTTO,
+            IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreEnum.ISEE_RESIDENZIALE_RIDOTTO_CON_FIGLI_AGGIUNTIVI
             // IseeTypologyEnum.CORRENTE not mapped
     );
-    private static final Map<TipoIndicatoreSinteticoEnum, IseeTypologyEnum> iseeTypesMapReverse = iseeTypesMap.entrySet().stream()
+    private static final Map<TipoIndicatoreEnum, IseeTypologyEnum> iseeTypesMapReverse = iseeTypesMap.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
     private void validateIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {

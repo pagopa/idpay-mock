@@ -1,87 +1,184 @@
 package it.gov.pagopa.mock.controller;
 
+import it.gov.pagopa.mock.service.isee.IseeMockService;
 import it.gov.pagopa.mock.wsimport.inps.*;
-import it.gov.pagopa.mock.BaseIntegrationTest;
-import it.gov.pagopa.mock.dto.SaveIseeRequestDTO;
-import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Unmarshaller;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.StringReader;
+import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
-public class InpsMockSoapControllerIntegrationTest extends BaseIntegrationTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-    private static final XMLInputFactory xmlFactory = XMLInputFactory.newFactory();
-    private static final JAXBContext jaxbContext;
+class InpsMockSoapControllerIntegrationTest {
 
-    static {
-        try {
-            jaxbContext = JAXBContext.newInstance(TypeEsitoConsultazioneIndicatore.class);
-        } catch (JAXBException e) {
-            throw new IllegalStateException("Something gone wrong while configuring JAXB serializer", e);
-        }
+    private IseeMockService iseeMockService;
+    private InpsMockSoapController controller;
+
+    @BeforeEach
+    void setUp() {
+        iseeMockService = mock(IseeMockService.class);
+        controller = new InpsMockSoapController(iseeMockService);
     }
-
-    @Autowired
-    private InpsMockSoapController inpsMockSoapController;
 
     @Test
-    void test(){
-        DataMockControllerIntegrationTest.storeIsee(mockMvc, objectMapper, "CF", new SaveIseeRequestDTO(Map.of(IseeTypologyEnum.ORDINARIO, BigDecimal.TEN)));
+    void consultazioneIndicatore_ShouldReturnOk_WhenIseeBelowThreshold() {
+        String cf = "RSSMRA80A01H501U";
+        BigDecimal mockedIsee = BigDecimal.valueOf(9000);
 
-        ConsultazioneIndicatoreResponse result = inpsMockSoapController.consultazioneIndicatore(buildRequest("CF", TipoIndicatoreSinteticoEnum.ORDINARIO));
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(EsitoEnum.OK, result.getConsultazioneIndicatoreResult().getEsito());
-        Assertions.assertEquals(BigDecimal.TEN, getIseeFromResponse(result.getConsultazioneIndicatoreResult()));
+        when(iseeMockService.retrieveIsee(cf, null)).thenReturn(mockedIsee);
+
+        ConsultazioneSogliaIndicatore request = new ConsultazioneSogliaIndicatore();
+        ConsultazioneSogliaIndicatoreRequestType reqType = new ConsultazioneSogliaIndicatoreRequestType();
+        reqType.setCodiceFiscale(cf);
+        request.setRequest(reqType);
+
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+
+        assertThat(response).isNotNull();
+        ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
+        assertThat(result.getEsito()).isEqualTo(EsitoEnum.OK);
+        assertThat(result.getDatiIndicatore()).isNotNull();
+        assertThat(result.getDatiIndicatore().getSottoSoglia()).isEqualTo(SiNoEnum.SI);
     }
 
-    private static ConsultazioneIndicatore buildRequest(String cf, TipoIndicatoreSinteticoEnum iseeType) {
-        ConsultazioneIndicatore out = new ConsultazioneIndicatore();
-        ConsultazioneIndicatoreRequestType value = new ConsultazioneIndicatoreRequestType();
-        RicercaCFType ricercaCF = new RicercaCFType();
-        ricercaCF.setCodiceFiscale(cf);
-        value.setRicercaCF(ricercaCF);
-        value.setTipoIndicatore(iseeType);
-        out.setRequest(value);
-        return out;
+    @Test
+    void consultazioneIndicatore_ShouldReturnInvalid_WhenIseeAboveThreshold() {
+        String cf = "RSSMRA80A01H501U";
+        BigDecimal mockedIsee = BigDecimal.valueOf(30000);
+
+        when(iseeMockService.retrieveIsee(cf, null)).thenReturn(mockedIsee);
+
+        ConsultazioneSogliaIndicatore request = new ConsultazioneSogliaIndicatore();
+        ConsultazioneSogliaIndicatoreRequestType reqType = new ConsultazioneSogliaIndicatoreRequestType();
+        reqType.setCodiceFiscale(cf);
+        request.setRequest(reqType);
+
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+
+        assertThat(response).isNotNull();
+        ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
+        assertThat(result.getEsito()).isEqualTo(EsitoEnum.RICHIESTA_INVALIDA);
+        assertThat(result.getDescrizioneErrore()).isEqualTo("ISEE above the threshold of 25,000");
+        assertThat(result.getDatiIndicatore()).isNull();
     }
 
-    private BigDecimal getIseeFromResponse(ConsultazioneIndicatoreResponseType inpsResponse) {
-        if (inpsResponse.getXmlEsitoIndicatore() != null && inpsResponse.getXmlEsitoIndicatore().length > 0) {
-            try {
-                String inpsResultString = new String(inpsResponse.getXmlEsitoIndicatore(), StandardCharsets.UTF_8);
+    @Test
+    void consultazioneIndicatore_ShouldReturnNoData_WhenIseeNotFound() {
+        String cf = "RSSMRA80A01H501U";
 
-                TypeEsitoConsultazioneIndicatore inpsResult = readResultFromXmlString(inpsResultString);
-                return inpsResult.getISEE();
-            } catch (Exception e) {
-                return null;
-            }
-        } else {
-            return null;
+        when(iseeMockService.retrieveIsee(cf, null)).thenReturn(null);
+
+        ConsultazioneSogliaIndicatore request = new ConsultazioneSogliaIndicatore();
+        ConsultazioneSogliaIndicatoreRequestType reqType = new ConsultazioneSogliaIndicatoreRequestType();
+        reqType.setCodiceFiscale(cf);
+        request.setRequest(reqType);
+
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+
+        assertThat(response).isNotNull();
+        ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
+        assertThat(result.getEsito()).isEqualTo(EsitoEnum.DATI_NON_TROVATI);
+        assertThat(result.getDatiIndicatore()).isNull();
+    }
+
+    @Test
+    void buildXmlResult_ShouldReturnXmlContainingIsee() {
+        BigDecimal isee = BigDecimal.valueOf(12345);
+
+        byte[] xmlBytes = InpsMockSoapController.buildXmlResult(isee);
+
+        assertThat(xmlBytes).isNotNull();
+        String xml = new String(xmlBytes);
+        assertThat(xml)
+                .satisfies(s -> {
+                    assertThat(s).contains("12345");
+                    assertThat(s).contains("<Indicatore");
+                });
+    }
+
+    @Test
+    void toByteArray_ShouldSerializeTypeEsitoConsultazioneIndicatore() {
+        TypeEsitoConsultazioneIndicatore indicatore = new TypeEsitoConsultazioneIndicatore();
+        indicatore.setISEE(BigDecimal.valueOf(6789));
+
+        byte[] xmlBytes = InpsMockSoapController.toByteArray(indicatore);
+
+        assertThat(xmlBytes).isNotNull();
+        String xml = new String(xmlBytes);
+        assertThat(xml)
+                .satisfies(s -> {
+                    assertThat(s).contains("6789");
+                    assertThat(s).contains("<Indicatore");
+                });
+
+    }
+
+    @Test
+    void toByteArray_ShouldThrowIllegalStateException_WhenMarshallerFails() throws Exception {
+        try (MockedStatic<JAXBContext> mockedStatic = Mockito.mockStatic(JAXBContext.class)) {
+            JAXBContext fakeContext = mock(JAXBContext.class);
+            when(fakeContext.createMarshaller()).thenThrow(new JAXBException("boom"));
+
+            mockedStatic.when(() -> JAXBContext.newInstance(TypeEsitoConsultazioneIndicatore.class))
+                    .thenReturn(fakeContext);
+
+            TypeEsitoConsultazioneIndicatore indicatore = new TypeEsitoConsultazioneIndicatore();
+            indicatore.setISEE(BigDecimal.valueOf(1234));
+
+            assertThatThrownBy(() -> InpsMockSoapController.toByteArray(indicatore))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Cannot create mocked INPS response");
         }
     }
 
-    public static TypeEsitoConsultazioneIndicatore readResultFromXmlString(String inpsResultString) {
-        try (StringReader sr = new StringReader(inpsResultString)) {
-            XMLStreamReader xsr = xmlFactory.createXMLStreamReader(sr);
+    @Test
+    void buildDatiIndicatore_ShouldThrowIllegalStateException_WhenDatatypeFactoryFails() {
+        controller = new InpsMockSoapController(iseeMockService);
 
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        try (MockedStatic<DatatypeFactory> mockedFactory = Mockito.mockStatic(DatatypeFactory.class)) {
+            mockedFactory.when(DatatypeFactory::newInstance).thenThrow(new RuntimeException("Error Test"));
 
-            JAXBElement<TypeEsitoConsultazioneIndicatore> je = unmarshaller.unmarshal(xsr, TypeEsitoConsultazioneIndicatore.class);
-            return je.getValue();
-        } catch (JAXBException | XMLStreamException e) {
-            throw new IllegalStateException("[ONBOARDING_REQUEST][INPS_INVOCATION] Cannot read XmlEsitoIndicatore to get ISEE from INPS response", e);
+            assertThatThrownBy(() -> {
+                controller.getClass()
+                        .getDeclaredMethod("buildDatiIndicatore", BigDecimal.class)
+                        .setAccessible(true);
+
+                java.lang.reflect.Method m = InpsMockSoapController.class
+                        .getDeclaredMethod("buildDatiIndicatore", BigDecimal.class);
+                m.setAccessible(true);
+                m.invoke(controller, BigDecimal.valueOf(1234));
+            })
+                    .hasCauseInstanceOf(IllegalStateException.class)
+                    .hasRootCauseMessage("Error Test");
         }
+    }
+
+    @Test
+    void consultazioneIndicatore_ShouldReturnInvalid_WhenIseeEqualsThreshold() {
+        String cf = "RSSMRA80A01H501U";
+        BigDecimal mockedIsee = BigDecimal.valueOf(25000);
+
+        when(iseeMockService.retrieveIsee(cf, null)).thenReturn(mockedIsee);
+
+        ConsultazioneSogliaIndicatore request = new ConsultazioneSogliaIndicatore();
+        ConsultazioneSogliaIndicatoreRequestType reqType = new ConsultazioneSogliaIndicatoreRequestType();
+        reqType.setCodiceFiscale(cf);
+        request.setRequest(reqType);
+
+        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneIndicatore(request);
+
+        assertThat(response).isNotNull();
+        ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
+        assertThat(result.getEsito()).isEqualTo(EsitoEnum.RICHIESTA_INVALIDA);
+        assertThat(result.getDescrizioneErrore()).isEqualTo("ISEE above the threshold of 25,000");
+        assertThat(result.getDatiIndicatore()).isNull();
     }
 }

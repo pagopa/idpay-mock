@@ -6,15 +6,15 @@ import it.gov.pagopa.mock.dto.CFDTO;
 import it.gov.pagopa.mock.dto.EncryptedCfDTO;
 import it.gov.pagopa.mock.enums.IseeTypologyEnum;
 import it.gov.pagopa.mock.model.MockedIsee;
-import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreSinteticoEnum;
+import it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Service
 @Slf4j
@@ -30,20 +30,24 @@ public class IseeMockServiceImpl implements IseeMockService {
     }
 
     @Override
-    public BigDecimal retrieveIsee(String fiscalCode, TipoIndicatoreSinteticoEnum iseeType) {
+    public BigDecimal retrieveIsee(String fiscalCode, TipoIndicatoreEnum iseeType) {
         log.debug("[RETRIEVE_ISEE] Retrieve isee");
         String userId = encryptCF(fiscalCode);
         log.info("[RETRIEVE_ISEE] Retrieve isee for userId {}", userId);
 
         MockedIsee isee = searchMockCollection(userId);
-
         Map<IseeTypologyEnum, BigDecimal> iseeTypes;
-        if (isee != null) {
+        if (isee != null && isee.getIseeTypeMap() != null && !isee.getIseeTypeMap().isEmpty()) {
             iseeTypes = isee.getIseeTypeMap();
         } else {
             iseeTypes = generateMockIsee(userId);
         }
-        return iseeTypes.get(iseeTypesMapReverse.get(iseeType));
+
+        return iseeTypes.values()
+                .stream()
+                .filter(Objects::nonNull)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
     }
 
     private Map<IseeTypologyEnum, BigDecimal> generateMockIsee(String userId) {
@@ -62,6 +66,7 @@ public class IseeMockServiceImpl implements IseeMockService {
         return iseeMockMap;
     }
 
+
     @Override
     public MockedIsee saveIsee(String fiscalCode, Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
         log.debug("[SAVE_ISEE] Save isee");
@@ -72,17 +77,16 @@ public class IseeMockServiceImpl implements IseeMockService {
         return mongoTemplate.save(new MockedIsee(userId, iseeTypes));
     }
 
-    private static final Map<IseeTypologyEnum, TipoIndicatoreSinteticoEnum> iseeTypesMap = Map.of(
-            IseeTypologyEnum.ORDINARIO, TipoIndicatoreSinteticoEnum.ORDINARIO,
-            IseeTypologyEnum.MINORENNE, TipoIndicatoreSinteticoEnum.MINORENNE,
-            IseeTypologyEnum.UNIVERSITARIO, TipoIndicatoreSinteticoEnum.UNIVERSITARIO,
-            IseeTypologyEnum.SOCIOSANITARIO, TipoIndicatoreSinteticoEnum.SOCIO_SANITARIO,
-            IseeTypologyEnum.DOTTORATO, TipoIndicatoreSinteticoEnum.DOTTORATO,
-            IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreSinteticoEnum.RESIDENZIALE
+    private static final Map<IseeTypologyEnum, TipoIndicatoreEnum> iseeTypesMap = Map.of(
+            IseeTypologyEnum.ORDINARIO, TipoIndicatoreEnum.ISEE_ORDINARIO,
+            IseeTypologyEnum.MINORENNE, TipoIndicatoreEnum.ISEE_MINORENNE_ORDINARIO,
+            IseeTypologyEnum.UNIVERSITARIO, TipoIndicatoreEnum.ISEE_UNIVERSITARIO_ORDINARIO,
+            IseeTypologyEnum.SOCIOSANITARIO, TipoIndicatoreEnum.ISEE_SOCIOSANITARIO_RIDOTTO,
+            IseeTypologyEnum.DOTTORATO, TipoIndicatoreEnum.ISEE_DOTTORATO_RICERCA_RIDOTTO,
+            IseeTypologyEnum.RESIDENZIALE, TipoIndicatoreEnum.ISEE_RESIDENZIALE_RIDOTTO_CON_FIGLI_AGGIUNTIVI
             // IseeTypologyEnum.CORRENTE not mapped
     );
-    private static final Map<TipoIndicatoreSinteticoEnum, IseeTypologyEnum> iseeTypesMapReverse = iseeTypesMap.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+
 
     private void validateIseeTypes(Map<IseeTypologyEnum, BigDecimal> iseeTypes) {
         iseeTypes.keySet().forEach(i -> {
@@ -103,7 +107,7 @@ public class IseeMockServiceImpl implements IseeMockService {
             userId = encryptedCfDTO.getToken();
         } catch (Exception e) {
             throw new ClientExceptionWithBody(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    INTERNAL_SERVER_ERROR,
                     "INTERNAL SERVER ERROR",
                     "Error during encryption", e);
         }

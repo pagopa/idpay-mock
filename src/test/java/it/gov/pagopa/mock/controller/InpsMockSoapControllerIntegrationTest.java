@@ -12,6 +12,8 @@ import org.mockito.Mockito;
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 
+import static it.gov.pagopa.mock.wsimport.inps.EsitoEnum.*;
+import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.SI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -44,9 +46,9 @@ class InpsMockSoapControllerIntegrationTest {
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
-        assertThat(result.getEsito()).isEqualTo(EsitoEnum.OK);
+        assertThat(result.getEsito()).isEqualTo(OK);
         assertThat(result.getDatiIndicatore()).isNotNull();
-        assertThat(result.getDatiIndicatore().getSottoSoglia()).isEqualTo(SiNoEnum.SI);
+        assertThat(result.getDatiIndicatore().getSottoSoglia()).isEqualTo(SI);
     }
 
     @Test
@@ -65,7 +67,7 @@ class InpsMockSoapControllerIntegrationTest {
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
-        assertThat(result.getEsito()).isEqualTo(EsitoEnum.RICHIESTA_INVALIDA);
+        assertThat(result.getEsito()).isEqualTo(RICHIESTA_INVALIDA);
         assertThat(result.getDescrizioneErrore()).isEqualTo("ISEE above the threshold of 25,000");
         assertThat(result.getDatiIndicatore()).isNull();
     }
@@ -85,7 +87,7 @@ class InpsMockSoapControllerIntegrationTest {
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
-        assertThat(result.getEsito()).isEqualTo(EsitoEnum.DATI_NON_TROVATI);
+        assertThat(result.getEsito()).isEqualTo(DATI_NON_TROVATI);
         assertThat(result.getDatiIndicatore()).isNull();
     }
 
@@ -177,7 +179,7 @@ class InpsMockSoapControllerIntegrationTest {
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
-        assertThat(result.getEsito()).isEqualTo(EsitoEnum.RICHIESTA_INVALIDA);
+        assertThat(result.getEsito()).isEqualTo(RICHIESTA_INVALIDA);
         assertThat(result.getDescrizioneErrore()).isEqualTo("ISEE above the threshold of 25,000");
         assertThat(result.getDatiIndicatore()).isNull();
     }

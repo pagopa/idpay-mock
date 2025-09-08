@@ -16,15 +16,15 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
-import static it.gov.pagopa.mock.wsimport.inps.EsitoEnum.OK;
-import static it.gov.pagopa.mock.wsimport.inps.EsitoEnum.RICHIESTA_INVALIDA;
+import static it.gov.pagopa.mock.wsimport.inps.EsitoEnum.*;
 import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.NO;
 import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.SI;
 import static it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreEnum.ISEE_ORDINARIO;
+import static jakarta.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @Endpoint
@@ -39,7 +39,7 @@ public class InpsMockSoapController {
 
         noIseeResult = new ConsultazioneSogliaIndicatoreResponse();
         ConsultazioneSogliaIndicatoreResponseType value = new ConsultazioneSogliaIndicatoreResponseType();
-        value.setEsito(EsitoEnum.DATI_NON_TROVATI);
+        value.setEsito(DATI_NON_TROVATI);
         noIseeResult.setConsultazioneSogliaIndicatoreResult(value);
     }
 
@@ -87,14 +87,14 @@ public class InpsMockSoapController {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(TypeEsitoConsultazioneIndicatore.class);
             Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            marshaller.setProperty(JAXB_FORMATTED_OUTPUT, true);
 
             JAXBElement<TypeEsitoConsultazioneIndicatore> je = new ObjectFactory().createIndicatore(inpsResult);
             StringWriter sw = new StringWriter();
 
             marshaller.marshal(je, sw);
 
-            return sw.toString().getBytes(StandardCharsets.UTF_8);
+            return sw.toString().getBytes(UTF_8);
         } catch (JAXBException e){
             throw new IllegalStateException("Cannot create mocked INPS response", e);
         }

@@ -13,6 +13,7 @@ import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 
 import static it.gov.pagopa.mock.wsimport.inps.EsitoEnum.*;
+import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.NO;
 import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.SI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,7 +32,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void consultazioneSogliaIndicatore_ShouldReturnOk_WhenIseeBelowThreshold() {
+    void consultazioneIndicatore_ReturnsOkAndSi_WhenIseeBelowThreshold()  {
         String cf = "RSSMRA80A01H501U";
         BigDecimal mockedIsee = BigDecimal.valueOf(9000);
 
@@ -52,7 +53,7 @@ class InpsMockSoapControllerIntegrationTest {
     }
 
     @Test
-    void consultazioneSogliaIndicatore_ShouldReturnInvalid_WhenIseeAboveThreshold() {
+    void consultazioneIndicatore_ReturnsOkAndNO_WhenIseeBelowThreshold() {
         String cf = "RSSMRA80A01H501U";
         BigDecimal mockedIsee = BigDecimal.valueOf(30000);
 
@@ -67,9 +68,9 @@ class InpsMockSoapControllerIntegrationTest {
 
         assertThat(response).isNotNull();
         ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
-        assertThat(result.getEsito()).isEqualTo(RICHIESTA_INVALIDA);
-        assertThat(result.getDescrizioneErrore()).isEqualTo("ISEE above the threshold of 25,000");
-        assertThat(result.getDatiIndicatore()).isNull();
+        assertThat(result.getEsito()).isEqualTo(OK);
+        assertThat(result.getDatiIndicatore()).isNotNull();
+        assertThat(result.getDatiIndicatore().getSottoSoglia()).isEqualTo(NO);
     }
 
     @Test
@@ -120,7 +121,6 @@ class InpsMockSoapControllerIntegrationTest {
                     assertThat(s).contains("6789");
                     assertThat(s).contains("<Indicatore");
                 });
-
     }
 
     @Test
@@ -161,26 +161,5 @@ class InpsMockSoapControllerIntegrationTest {
                     .hasCauseInstanceOf(IllegalStateException.class)
                     .hasRootCauseMessage("Error Test");
         }
-    }
-
-    @Test
-    void consultazioneSogliaIndicatore_ShouldReturnInvalid_WhenIseeEqualsThreshold() {
-        String cf = "RSSMRA80A01H501U";
-        BigDecimal mockedIsee = BigDecimal.valueOf(25000);
-
-        when(iseeMockService.retrieveIsee(cf, null)).thenReturn(mockedIsee);
-
-        ConsultazioneSogliaIndicatore request = new ConsultazioneSogliaIndicatore();
-        ConsultazioneSogliaIndicatoreRequestType reqType = new ConsultazioneSogliaIndicatoreRequestType();
-        reqType.setCodiceFiscale(cf);
-        request.setRequest(reqType);
-
-        ConsultazioneSogliaIndicatoreResponse response = controller.consultazioneSogliaIndicatore(request);
-
-        assertThat(response).isNotNull();
-        ConsultazioneSogliaIndicatoreResponseType result = response.getConsultazioneSogliaIndicatoreResult();
-        assertThat(result.getEsito()).isEqualTo(RICHIESTA_INVALIDA);
-        assertThat(result.getDescrizioneErrore()).isEqualTo("ISEE above the threshold of 25,000");
-        assertThat(result.getDatiIndicatore()).isNull();
     }
 }

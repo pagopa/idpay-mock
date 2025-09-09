@@ -60,13 +60,9 @@ public class InpsMockSoapController {
             ConsultazioneSogliaIndicatoreResponse result = new ConsultazioneSogliaIndicatoreResponse();
             ConsultazioneSogliaIndicatoreResponseType value = new ConsultazioneSogliaIndicatoreResponseType();
 
-            if (isee.compareTo(BigDecimal.valueOf(25000)) < 0) {
-                value.setEsito(OK);
-                value.setDatiIndicatore(buildDatiIndicatore(isee));
-            } else {
-                value.setEsito(RICHIESTA_INVALIDA);
-                value.setDescrizioneErrore("ISEE above the threshold of 25,000");
-            }
+            value.setEsito(OK);
+            value.setDatiIndicatore(buildDatiIndicatore(isee));
+
 
             result.setConsultazioneSogliaIndicatoreResult(value);
             return result;

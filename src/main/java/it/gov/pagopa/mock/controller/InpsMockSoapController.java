@@ -12,9 +12,19 @@ import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
+import java.util.GregorianCalendar;
+import java.util.UUID;
+
+import static it.gov.pagopa.mock.wsimport.inps.EsitoEnum.*;
+import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.NO;
+import static it.gov.pagopa.mock.wsimport.inps.SiNoEnum.SI;
+import static it.gov.pagopa.mock.wsimport.inps.TipoIndicatoreEnum.ISEE_ORDINARIO;
+import static jakarta.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @Endpoint
@@ -22,42 +32,45 @@ public class InpsMockSoapController {
     private static final String NAMESPACE_URI = "http://inps.it/ConsultazioneISEE";
 
     private final IseeMockService iseeMockService;
-    private final ConsultazioneIndicatoreResponse noIseeResult;
+    private final ConsultazioneSogliaIndicatoreResponse noIseeResult;
 
     public InpsMockSoapController(IseeMockService iseeMockService) {
         this.iseeMockService = iseeMockService;
 
-        noIseeResult = new ConsultazioneIndicatoreResponse();
-        ConsultazioneIndicatoreResponseType value = new ConsultazioneIndicatoreResponseType();
-        value.setEsito(EsitoEnum.DATI_NON_TROVATI);
-        noIseeResult.setConsultazioneIndicatoreResult(value);
+        noIseeResult = new ConsultazioneSogliaIndicatoreResponse();
+        ConsultazioneSogliaIndicatoreResponseType value = new ConsultazioneSogliaIndicatoreResponseType();
+        value.setEsito(DATI_NON_TROVATI);
+        noIseeResult.setConsultazioneSogliaIndicatoreResult(value);
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "ConsultazioneIndicatore")
+    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "ConsultazioneSogliaIndicatore")
     @ResponsePayload
-    public ConsultazioneIndicatoreResponse consultazioneIndicatore(@RequestPayload ConsultazioneIndicatore request) {
+    public ConsultazioneSogliaIndicatoreResponse consultazioneSogliaIndicatore(
+            @RequestPayload ConsultazioneSogliaIndicatore request) {
+
         BigDecimal isee = iseeMockService.retrieveIsee(
-                request.getRequest().getRicercaCF().getCodiceFiscale(),
-                request.getRequest().getTipoIndicatore()
+                request.getRequest().getCodiceFiscale(),
+                null
         );
-        if(isee!=null){
-            log.info("[MOCK_INPS] Returning mocked ISEE:{} iseeType:{}", isee, request.getRequest().getTipoIndicatore());
-            ConsultazioneIndicatoreResponse result = new ConsultazioneIndicatoreResponse();
-            ConsultazioneIndicatoreResponseType value = new ConsultazioneIndicatoreResponseType();
-            value.setEsito(EsitoEnum.OK);
-            value.setXmlEsitoIndicatore(buildXmlResult(isee));
-            result.setConsultazioneIndicatoreResult(value);
+
+        if (isee != null) {
+            log.info("[MOCK_INPS] Returning mocked ISEE:{} for CF:{}",
+                    isee, request.getRequest().getCodiceFiscale());
+
+            ConsultazioneSogliaIndicatoreResponse result = new ConsultazioneSogliaIndicatoreResponse();
+            ConsultazioneSogliaIndicatoreResponseType value = new ConsultazioneSogliaIndicatoreResponseType();
+
+            value.setEsito(OK);
+            value.setDatiIndicatore(buildDatiIndicatore(isee));
+
+
+            result.setConsultazioneSogliaIndicatoreResult(value);
             return result;
         } else {
             return noIseeResult;
         }
     }
 
-    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "ConsultazioneAttestazione")
-    @ResponsePayload
-    public ConsultazioneAttestazioneResponse consultazioneAttestazione(@RequestPayload ConsultazioneAttestazione request) {
-        throw new IllegalStateException("NOT IMPLEMENTED");
-    }
 
     public static byte[] buildXmlResult(BigDecimal isee) {
         TypeEsitoConsultazioneIndicatore xmlResult = new TypeEsitoConsultazioneIndicatore();
@@ -70,16 +83,32 @@ public class InpsMockSoapController {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(TypeEsitoConsultazioneIndicatore.class);
             Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            marshaller.setProperty(JAXB_FORMATTED_OUTPUT, true);
 
             JAXBElement<TypeEsitoConsultazioneIndicatore> je = new ObjectFactory().createIndicatore(inpsResult);
             StringWriter sw = new StringWriter();
 
             marshaller.marshal(je, sw);
 
-            return sw.toString().getBytes(StandardCharsets.UTF_8);
+            return sw.toString().getBytes(UTF_8);
         } catch (JAXBException e){
             throw new IllegalStateException("Cannot create mocked INPS response", e);
         }
+    }
+
+    private DatiIndicatoreType buildDatiIndicatore(BigDecimal isee) {
+        DatiIndicatoreType dati = new DatiIndicatoreType();
+        dati.setTipoIndicatore(ISEE_ORDINARIO);
+        dati.setSottoSoglia(isee.compareTo(BigDecimal.valueOf(25000)) < 0 ? SI : NO);
+        dati.setProtocolloDSU(UUID.randomUUID().toString());
+        try {
+            GregorianCalendar gc = new GregorianCalendar();
+            XMLGregorianCalendar xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
+            dati.setDataPresentazioneDSU(xmlDate);
+        } catch (Exception e) {
+            throw new IllegalStateException("Error in creating the date", e);
+        }
+        dati.setPresenzaDifformita(NO);
+        return dati;
     }
 }

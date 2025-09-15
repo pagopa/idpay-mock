@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
                 "logging.level.WireMock=ERROR",
                 "rest-client.encryptpdv.baseUrl=http://localhost:${wiremock.server.port}",
                 "api.key.encrypt=x_api_key",
+                "rest-client.decryptpdv.baseUrl=http://localhost:${wiremock.server.port}",
+                "api.key.decrypt=x_api_key",
                 //endregion
         })
 @AutoConfigureMockMvc

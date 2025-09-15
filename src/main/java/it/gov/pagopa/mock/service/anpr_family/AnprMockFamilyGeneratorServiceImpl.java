@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 @Service
 @Slf4j
@@ -75,8 +75,10 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .build();
     }
 
-    private static String getRandom(List<String> lista) {
-        int index = ThreadLocalRandom.current().nextInt(lista.size());
+    private static String getRandom(List<String> lista, String codiceFiscale) {
+        Random seededRandom = new Random(codiceFiscale.hashCode());
+
+        int index = seededRandom.nextInt(lista.size());
         return lista.get(index);
     }
 
@@ -88,12 +90,12 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .build();
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
-                .cognome(getRandom(SURNAME))
+                .cognome(getRandom(SURNAME, codiceFiscale))
                 .dataNascita(Utilities.calculateBirthDateFromFiscalCode(codiceFiscale).toString())
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
-                .nome(getRandom(NAME))
-                .sesso(getRandom(GENDER))
+                .nome(getRandom(NAME, codiceFiscale))
+                .sesso(getRandom(GENDER, codiceFiscale))
                 .build();
         Identificativi identificativi = Identificativi.builder().idANPR("AB12345CD").build();
         InfoSoggettoEnte infoSoggettoEnte = InfoSoggettoEnte.builder()

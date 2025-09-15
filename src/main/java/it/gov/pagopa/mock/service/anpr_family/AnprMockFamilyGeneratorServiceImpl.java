@@ -63,7 +63,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .listaSoggetti(ListaSoggetti.builder()
                         .datiSoggetto(familyMembers)
                         .build())
-                .idOperazioneANPR("87654321")
+                .idOperazioneANPR(family.getFamilyId())
                 .build();
     }
 
@@ -73,7 +73,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .listaSoggetti(ListaSoggetti.builder()
                         .datiSoggetto(List.of(createDatiSoggetto(codiceFiscale, nomeComune, cap, siglaProvincia)))
                         .build())
-                .idOperazioneANPR("87654321")
+                .idOperazioneANPR(String.valueOf(System.currentTimeMillis()))
                 .build();
     }
 

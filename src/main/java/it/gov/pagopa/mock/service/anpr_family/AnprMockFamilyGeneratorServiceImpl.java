@@ -12,8 +12,8 @@ import it.gov.pagopa.mock.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @Slf4j
@@ -23,6 +23,8 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     private static final List<String> NAME = List.of("MARIO", "LUCA", "GIUSEPPE", "ANDREA", "PAOLO", "ELENA", "MARIA", "LUCIA");
     private static final List<String> SURNAME = List.of("ROSSI", "BIANCHI", "VERDI", "FERRARI", "RICCI");
     private static final List<String> GENDER = List.of("M", "F");
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final FamilyMockGeneratorService familyMockGeneratorService;
     private final EncryptRestConnector encryptRestConnector;
@@ -75,10 +77,8 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .build();
     }
 
-    private static String getRandom(List<String> lista, String codiceFiscale) {
-        Random seededRandom = new Random(codiceFiscale.hashCode());
-
-        int index = seededRandom.nextInt(lista.size());
+    private static String getRandom(List<String> lista) {
+        int index = SECURE_RANDOM.nextInt(lista.size());
         return lista.get(index);
     }
 
@@ -90,12 +90,12 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .build();
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
-                .cognome(getRandom(SURNAME, codiceFiscale))
+                .cognome(getRandom(SURNAME))
                 .dataNascita(Utilities.calculateBirthDateFromFiscalCode(codiceFiscale).toString())
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
-                .nome(getRandom(NAME, codiceFiscale))
-                .sesso(getRandom(GENDER, codiceFiscale))
+                .nome(getRandom(NAME))
+                .sesso(getRandom(GENDER))
                 .build();
         Identificativi identificativi = Identificativi.builder().idANPR("AB12345CD").build();
         InfoSoggettoEnte infoSoggettoEnte = InfoSoggettoEnte.builder()

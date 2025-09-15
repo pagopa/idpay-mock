@@ -9,13 +9,17 @@ import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.anpr.*;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
 import it.gov.pagopa.mock.utils.Utilities;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@Slf4j
 public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGeneratorService{
+    public static final String FISCAL_CODE_REGEX = "^([A-Za-z]{6}[0-9lmnpqrstuvLMNPQRSTUV]{2}[abcdehlmprstABCDEHLMPRST][0-9lmnpqrstuvLMNPQRSTUV]{2}[A-Za-z][0-9lmnpqrstuvLMNPQRSTUV]{3}[A-Za-z])$";
+
     private static final List<String> NAME = List.of("MARIO", "LUCA", "GIUSEPPE", "ANDREA", "PAOLO", "ELENA", "MARIA", "LUCIA");
     private static final List<String> SURNAME = List.of("ROSSI", "BIANCHI", "VERDI", "FERRARI", "RICCI");
     private static final List<String> GENDER = List.of("M", "F");
@@ -32,6 +36,11 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
 
     @Override
     public AnprResponseDTO getAnprFamily(AnprRequestDTO anprRequestDTO) {
+        if(anprRequestDTO == null || anprRequestDTO.getCriteriRicerca() == null ||
+                !anprRequestDTO.getCriteriRicerca().getCodiceFiscale().matches(FISCAL_CODE_REGEX)){
+            log.info("[MOCK_ANPR_FAMILY] Fiscal code is not valid");
+            return null;
+        }
         String codiceFiscale = anprRequestDTO.getCriteriRicerca().getCodiceFiscale();
 
         EncryptedCfDTO encryptedCfDTO = encryptRestConnector.upsertToken(new CFDTO(codiceFiscale));

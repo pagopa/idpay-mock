@@ -8,17 +8,17 @@ import it.gov.pagopa.mock.dto.EncryptedCfDTO;
 import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.anpr.*;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
-import it.gov.pagopa.mock.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
 @Slf4j
 public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGeneratorService{
-    public static final String FISCAL_CODE_REGEX = "^([A-Za-z]{6}[0-9lmnpqrstuvLMNPQRSTUV]{2}[abcdehlmprstABCDEHLMPRST][0-9lmnpqrstuvLMNPQRSTUV]{2}[A-Za-z][0-9lmnpqrstuvLMNPQRSTUV]{3}[A-Za-z])$";
 
     private static final List<String> NAME = List.of("MARIO", "LUCA", "GIUSEPPE", "ANDREA", "PAOLO", "ELENA", "MARIA", "LUCIA");
     private static final List<String> SURNAME = List.of("ROSSI", "BIANCHI", "VERDI", "FERRARI", "RICCI");
@@ -38,11 +38,6 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
 
     @Override
     public AnprResponseDTO getAnprFamily(AnprRequestDTO anprRequestDTO) {
-        if(anprRequestDTO == null || anprRequestDTO.getCriteriRicerca() == null ||
-                !anprRequestDTO.getCriteriRicerca().getCodiceFiscale().matches(FISCAL_CODE_REGEX)){
-            log.info("[MOCK_ANPR_FAMILY] Fiscal code is not valid");
-            return null;
-        }
         String codiceFiscale = anprRequestDTO.getCriteriRicerca().getCodiceFiscale();
 
         EncryptedCfDTO encryptedCfDTO = encryptRestConnector.upsertToken(new CFDTO(codiceFiscale));
@@ -91,7 +86,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
                 .cognome(getRandom(SURNAME))
-                .dataNascita(Utilities.calculateBirthDateFromFiscalCode(codiceFiscale).toString())
+                .dataNascita(randomBirthDateOver18().toString())
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
                 .nome(getRandom(NAME))
@@ -121,5 +116,18 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .identificativi(identificativi)
                 .infoSoggettoEnte(List.of(infoSoggettoEnte))
                 .residenza(List.of(residenza)).build();
+    }
+
+    public static OffsetDateTime randomBirthDateOver18() {
+        OffsetDateTime now = OffsetDateTime.now();
+        long minEpoch = now.minusYears(18).toEpochSecond();
+        long maxEpoch = now.plusDays(120).toEpochSecond();
+
+        long range = maxEpoch - minEpoch;
+
+        SecureRandom random = new SecureRandom();
+        long randomOffset = random.nextLong(0, range + 1);
+
+        return OffsetDateTime.ofInstant(Instant.ofEpochSecond(minEpoch + randomOffset), now.getOffset());
     }
 }

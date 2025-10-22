@@ -11,6 +11,7 @@ import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.dto.anpr.CriteriRicerca;
 import it.gov.pagopa.mock.dto.anpr.DatiSoggetto;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,7 +84,12 @@ class AnprMockFamilyGeneratorServiceImplTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.getListaSoggetti().getDatiSoggetto()).isNotEmpty();
-        assertEquals(1L,response.getListaSoggetti().getDatiSoggetto().size());
+        Assertions.assertEquals(1L,response.getListaSoggetti().getDatiSoggetto().size());
+        DatiSoggetto familyMember = response.getListaSoggetti().getDatiSoggetto().get(0);
+        Assertions.assertNotNull(familyMember.getGeneralita());
+        String dataNascita = familyMember.getGeneralita().getDataNascita();
+        Assertions.assertNotNull(dataNascita);
+        Assertions.assertTrue(dataNascita.matches("\\d{4}-\\d{2}-\\d{2}"));
         verify(encryptRestConnector).upsertToken(any(CFDTO.class));
         verify(familyMockGeneratorService).retrieveFamily(ENCRYPTED_TOKEN);
     }

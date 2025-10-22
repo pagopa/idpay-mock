@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -23,6 +24,8 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     private static final List<String> NAME = List.of("MARIO", "LUCA", "GIUSEPPE", "ANDREA", "PAOLO", "ELENA", "MARIA", "LUCIA");
     private static final List<String> SURNAME = List.of("ROSSI", "BIANCHI", "VERDI", "FERRARI", "RICCI");
     private static final List<String> GENDER = List.of("M", "F");
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -86,7 +89,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
                 .cognome(getRandom(SURNAME))
-                .dataNascita(randomBirthDateOver18().toString())
+                .dataNascita(randomBirthDateOver18(true))
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
                 .nome(getRandom(NAME))
@@ -130,4 +133,32 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
 
         return OffsetDateTime.ofInstant(Instant.ofEpochSecond(minEpoch + randomOffset), now.getOffset());
     }
+
+
+    public static String randomBirthDateOver18(boolean isOver18) {
+        OffsetDateTime now = OffsetDateTime.now();
+
+        OffsetDateTime over18Max = now.minusYears(18);
+        OffsetDateTime minDate = now.minusYears(100);
+
+        SecureRandom random = new SecureRandom();
+
+        OffsetDateTime randomDate;
+        if (isOver18) {
+            long minEpoch = minDate.toEpochSecond();
+            long maxEpoch = over18Max.toEpochSecond();
+
+            long randomEpoch = minEpoch + (long) (random.nextDouble() * (maxEpoch - minEpoch));
+            randomDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(randomEpoch), now.getOffset());
+        } else {
+            long minEpoch = over18Max.toEpochSecond();
+            long maxEpoch = now.toEpochSecond();
+
+            long randomEpoch = minEpoch + (long) (random.nextDouble() * (maxEpoch - minEpoch));
+            randomDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(randomEpoch), now.getOffset());
+        }
+
+        return randomDate.format(FORMATTER);
+    }
+
 }

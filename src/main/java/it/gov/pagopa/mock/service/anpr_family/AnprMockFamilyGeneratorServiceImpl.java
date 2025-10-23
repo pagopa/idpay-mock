@@ -101,7 +101,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
                 .cognome(getRandom(SURNAME))
-                .dataNascita(randomBirthDateOver18(isOver18))
+                .dataNascita(randomBirthDate(isOver18))
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
                 .nome(getRandom(NAME))
@@ -133,21 +133,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .residenza(List.of(residenza)).build();
     }
 
-    public static OffsetDateTime randomBirthDateOver18() {
-        OffsetDateTime now = OffsetDateTime.now();
-        long minEpoch = now.minusYears(18).toEpochSecond();
-        long maxEpoch = now.plusDays(120).toEpochSecond();
-
-        long range = maxEpoch - minEpoch;
-
-        SecureRandom random = new SecureRandom();
-        long randomOffset = random.nextLong(0, range + 1);
-
-        return OffsetDateTime.ofInstant(Instant.ofEpochSecond(minEpoch + randomOffset), now.getOffset());
-    }
-
-
-    public static String randomBirthDateOver18(boolean isOver18) {
+    public static String randomBirthDate(boolean isOver18) {
         OffsetDateTime now = OffsetDateTime.now();
 
         OffsetDateTime over18Max = now.minusYears(18);

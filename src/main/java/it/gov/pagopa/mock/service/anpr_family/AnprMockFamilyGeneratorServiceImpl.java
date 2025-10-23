@@ -15,6 +15,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,29 +48,40 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
 
         Family family = familyMockGeneratorService.retrieveFamily(encryptedCfDTO.getToken());
 
-        return family == null ? generateFamily(codiceFiscale, "ROMA", "00100", "RM")
+        return family == null ? generateFamily(codiceFiscale, "ROMA", "00100", "RM", true)
                 : decryptFamily(family);
 
     }
 
     private AnprResponseDTO decryptFamily(Family family) {
+
         List<DatiSoggetto> familyMembers = family.getMemberIds().stream().map(user -> {
             DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
-            return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI");
+            return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI", true);
         }).toList();
+        List<DatiSoggetto> allFamilyMembers = new ArrayList<>(familyMembers);
+
+        if(family.getMinorMemberIds() != null && !family.getMinorMemberIds().isEmpty()) {
+            List<DatiSoggetto> familyMinorMembers = family.getMinorMemberIds().stream().map(user -> {
+                DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
+                return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI", false);
+            }).toList();
+            allFamilyMembers.addAll(familyMinorMembers);
+        }
+
         return AnprResponseDTO.builder()
                 .listaSoggetti(ListaSoggetti.builder()
-                        .datiSoggetto(familyMembers)
+                        .datiSoggetto(allFamilyMembers)
                         .build())
                 .idOperazioneANPR(family.getFamilyId())
                 .build();
     }
 
 
-    public AnprResponseDTO generateFamily(String codiceFiscale, String nomeComune, String cap, String siglaProvincia){
+    public AnprResponseDTO generateFamily(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18){
         return AnprResponseDTO.builder()
                 .listaSoggetti(ListaSoggetti.builder()
-                        .datiSoggetto(List.of(createDatiSoggetto(codiceFiscale, nomeComune, cap, siglaProvincia)))
+                        .datiSoggetto(List.of(createDatiSoggetto(codiceFiscale, nomeComune, cap, siglaProvincia, isOver18)))
                         .build())
                 .idOperazioneANPR(String.valueOf(System.currentTimeMillis()))
                 .build();
@@ -80,7 +92,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         return lista.get(index);
     }
 
-    private DatiSoggetto createDatiSoggetto(String codiceFiscale, String nomeComune, String cap, String siglaProvincia){
+    private DatiSoggetto createDatiSoggetto(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18){
         Comune comune = Comune.builder()
                 .codiceIstat("123456")
                 .nomeComune(nomeComune)
@@ -89,7 +101,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
                 .cognome(getRandom(SURNAME))
-                .dataNascita(randomBirthDateOver18(true))
+                .dataNascita(randomBirthDateOver18(isOver18))
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
                 .nome(getRandom(NAME))

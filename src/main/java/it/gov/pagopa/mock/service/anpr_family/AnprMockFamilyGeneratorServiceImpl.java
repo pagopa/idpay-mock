@@ -54,7 +54,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     }
 
     private AnprResponseDTO decryptFamily(Family family) {
-
+        log.info("[FAMILY_MOCKED] Retrieved family data from the database {}", family);
         List<DatiSoggetto> familyMembers = family.getMemberIds().stream().map(user -> {
             DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
             return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI", true);
@@ -62,6 +62,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         List<DatiSoggetto> allFamilyMembers = new ArrayList<>(familyMembers);
 
         if(family.getMinorMemberIds() != null && !family.getMinorMemberIds().isEmpty()) {
+            log.info("[FAMILY_MOCKED] Family with ID {} has {} minor members", family.getFamilyId(), familyMembers.size());
             List<DatiSoggetto> familyMinorMembers = family.getMinorMemberIds().stream().map(user -> {
                 DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
                 return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI", false);

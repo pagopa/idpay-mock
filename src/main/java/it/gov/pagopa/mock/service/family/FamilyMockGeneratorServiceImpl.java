@@ -84,6 +84,7 @@ public class FamilyMockGeneratorServiceImpl implements FamilyMockGeneratorServic
 
             return Family.builder().familyId(mockedFamily.getFamilyId())
                     .memberIds(mockedFamily.getMemberIds())
+                    .minorMemberIds(mockedFamily.getMinorMemberIds())
                     .build();
         } catch (IndexOutOfBoundsException e){
             return null;

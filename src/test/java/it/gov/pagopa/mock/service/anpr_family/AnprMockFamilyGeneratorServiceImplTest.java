@@ -11,6 +11,7 @@ import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.dto.anpr.CriteriRicerca;
 import it.gov.pagopa.mock.dto.anpr.DatiSoggetto;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,7 +84,12 @@ class AnprMockFamilyGeneratorServiceImplTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.getListaSoggetti().getDatiSoggetto()).isNotEmpty();
-        assertEquals(1L,response.getListaSoggetti().getDatiSoggetto().size());
+        Assertions.assertEquals(1L,response.getListaSoggetti().getDatiSoggetto().size());
+        DatiSoggetto familyMember = response.getListaSoggetti().getDatiSoggetto().get(0);
+        Assertions.assertNotNull(familyMember.getGeneralita());
+        String dataNascita = familyMember.getGeneralita().getDataNascita();
+        Assertions.assertNotNull(dataNascita);
+        Assertions.assertTrue(dataNascita.matches("\\d{4}-\\d{2}-\\d{2}"));
         verify(encryptRestConnector).upsertToken(any(CFDTO.class));
         verify(familyMockGeneratorService).retrieveFamily(ENCRYPTED_TOKEN);
     }
@@ -95,7 +100,7 @@ class AnprMockFamilyGeneratorServiceImplTest {
         String cf = PII;
 
         // when
-        AnprResponseDTO response = service.generateFamily(cf, "ROMA", "00100", "RM");
+        AnprResponseDTO response = service.generateFamily(cf, "ROMA", "00100", "RM", true);
 
         // then
         assertThat(response).isNotNull();
@@ -104,5 +109,34 @@ class AnprMockFamilyGeneratorServiceImplTest {
         assertThat(soggetto.getGeneralita().getNome()).isNotBlank();
         assertThat(soggetto.getGeneralita().getCognome()).isNotBlank();
         assertThat(soggetto.getGeneralita().getSesso()).isIn("M", "F");
+    }
+
+    @Test
+    void testGetAnprFamily_whenFamilyExistsWithChildren() {
+        // given
+        String cf = PII;
+        AnprRequestDTO request = AnprRequestDTO.builder()
+                .criteriRicerca(CriteriRicerca.builder().codiceFiscale(cf).build())
+                .build();
+
+        EncryptedCfDTO encrypted = new EncryptedCfDTO(ENCRYPTED_TOKEN);
+        when(encryptRestConnector.upsertToken(any(CFDTO.class))).thenReturn(encrypted);
+
+        Family family = Family.builder().memberIds(Set.of("token-1", "token-2"))
+                .minorMemberIds(Set.of("token-child-1")).build();
+        when(familyMockGeneratorService.retrieveFamily(ENCRYPTED_TOKEN)).thenReturn(family);
+
+        when(decryptRestConnector.getPiiByToken("token-1")).thenReturn(new DecryptCfDTO("BBBBBB01E07A000B"));
+        when(decryptRestConnector.getPiiByToken("token-2")).thenReturn(new DecryptCfDTO("BBBBBB01E07A000C"));
+        when(decryptRestConnector.getPiiByToken("token-child-1")).thenReturn(new DecryptCfDTO("BBBBBB01E07A000D"));
+
+        // when
+        AnprResponseDTO response = service.getAnprFamily(request);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getListaSoggetti().getDatiSoggetto()).hasSize(3);
+        verify(encryptRestConnector).upsertToken(any(CFDTO.class));
+        verify(familyMockGeneratorService).retrieveFamily(ENCRYPTED_TOKEN);
     }
 }

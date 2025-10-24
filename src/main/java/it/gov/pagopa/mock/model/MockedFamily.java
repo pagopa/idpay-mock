@@ -18,4 +18,5 @@ public class MockedFamily {
     @MongoId
     private String familyId;
     private Set<String> memberIds;
+    private Set<String> minorMemberIds;
 }

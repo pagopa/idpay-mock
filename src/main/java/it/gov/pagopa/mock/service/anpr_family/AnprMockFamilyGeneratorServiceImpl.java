@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +25,8 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     private static final List<String> NAME = List.of("MARIO", "LUCA", "GIUSEPPE", "ANDREA", "PAOLO", "ELENA", "MARIA", "LUCIA");
     private static final List<String> SURNAME = List.of("ROSSI", "BIANCHI", "VERDI", "FERRARI", "RICCI");
     private static final List<String> GENDER = List.of("M", "F");
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -44,29 +48,41 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
 
         Family family = familyMockGeneratorService.retrieveFamily(encryptedCfDTO.getToken());
 
-        return family == null ? generateFamily(codiceFiscale, "ROMA", "00100", "RM")
+        return family == null ? generateFamily(codiceFiscale, "ROMA", "00100", "RM", true)
                 : decryptFamily(family);
 
     }
 
     private AnprResponseDTO decryptFamily(Family family) {
+        log.info("[FAMILY_MOCKED] Retrieved family data from the database {}", family);
         List<DatiSoggetto> familyMembers = family.getMemberIds().stream().map(user -> {
             DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
-            return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI");
+            return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI", true);
         }).toList();
+        List<DatiSoggetto> allFamilyMembers = new ArrayList<>(familyMembers);
+
+        if(family.getMinorMemberIds() != null && !family.getMinorMemberIds().isEmpty()) {
+            log.info("[FAMILY_MOCKED] Family with ID {} has {} minor members", family.getFamilyId(), familyMembers.size());
+            List<DatiSoggetto> familyMinorMembers = family.getMinorMemberIds().stream().map(user -> {
+                DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
+                return createDatiSoggetto(decrypted.getPii(), "MILANO", "20121", "MI", false);
+            }).toList();
+            allFamilyMembers.addAll(familyMinorMembers);
+        }
+
         return AnprResponseDTO.builder()
                 .listaSoggetti(ListaSoggetti.builder()
-                        .datiSoggetto(familyMembers)
+                        .datiSoggetto(allFamilyMembers)
                         .build())
                 .idOperazioneANPR(family.getFamilyId())
                 .build();
     }
 
 
-    public AnprResponseDTO generateFamily(String codiceFiscale, String nomeComune, String cap, String siglaProvincia){
+    public AnprResponseDTO generateFamily(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18){
         return AnprResponseDTO.builder()
                 .listaSoggetti(ListaSoggetti.builder()
-                        .datiSoggetto(List.of(createDatiSoggetto(codiceFiscale, nomeComune, cap, siglaProvincia)))
+                        .datiSoggetto(List.of(createDatiSoggetto(codiceFiscale, nomeComune, cap, siglaProvincia, isOver18)))
                         .build())
                 .idOperazioneANPR(String.valueOf(System.currentTimeMillis()))
                 .build();
@@ -77,7 +93,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         return lista.get(index);
     }
 
-    private DatiSoggetto createDatiSoggetto(String codiceFiscale, String nomeComune, String cap, String siglaProvincia){
+    private DatiSoggetto createDatiSoggetto(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18){
         Comune comune = Comune.builder()
                 .codiceIstat("123456")
                 .nomeComune(nomeComune)
@@ -86,7 +102,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         Generalita generalita = Generalita.builder()
                 .codiceFiscale(CodiceFiscale.builder().codFiscale(codiceFiscale).validitaCF("1").build())
                 .cognome(getRandom(SURNAME))
-                .dataNascita(randomBirthDateOver18().toString())
+                .dataNascita(randomBirthDate(isOver18))
                 .idSchedaSoggettoANPR("12345678")
                 .luogoNascita(LuogoNascita.builder().comune(comune).build())
                 .nome(getRandom(NAME))
@@ -118,16 +134,30 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
                 .residenza(List.of(residenza)).build();
     }
 
-    public static OffsetDateTime randomBirthDateOver18() {
+    public static String randomBirthDate(boolean isOver18) {
         OffsetDateTime now = OffsetDateTime.now();
-        long minEpoch = now.minusYears(18).toEpochSecond();
-        long maxEpoch = now.plusDays(120).toEpochSecond();
 
-        long range = maxEpoch - minEpoch;
+        OffsetDateTime over18Max = now.minusYears(18);
+        OffsetDateTime minDate = now.minusYears(100);
 
         SecureRandom random = new SecureRandom();
-        long randomOffset = random.nextLong(0, range + 1);
 
-        return OffsetDateTime.ofInstant(Instant.ofEpochSecond(minEpoch + randomOffset), now.getOffset());
+        OffsetDateTime randomDate;
+        if (isOver18) {
+            long minEpoch = minDate.toEpochSecond();
+            long maxEpoch = over18Max.toEpochSecond();
+
+            long randomEpoch = minEpoch + (long) (random.nextDouble() * (maxEpoch - minEpoch));
+            randomDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(randomEpoch), now.getOffset());
+        } else {
+            long minEpoch = over18Max.toEpochSecond();
+            long maxEpoch = now.toEpochSecond();
+
+            long randomEpoch = minEpoch + (long) (random.nextDouble() * (maxEpoch - minEpoch));
+            randomDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(randomEpoch), now.getOffset());
+        }
+
+        return randomDate.format(FORMATTER);
     }
+
 }

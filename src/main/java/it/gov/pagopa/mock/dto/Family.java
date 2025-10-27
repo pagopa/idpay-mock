@@ -14,4 +14,5 @@ import java.util.Set;
 public class Family {
     private String familyId;
     private Set<String> memberIds;
+    private Set<String> minorMemberIds;
 }

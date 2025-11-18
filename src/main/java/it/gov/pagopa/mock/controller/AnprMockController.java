@@ -3,6 +3,7 @@ package it.gov.pagopa.mock.controller;
 import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,8 +17,11 @@ public interface AnprMockController {
     AnprResponseDTO getAnprResidence(
             @Valid @RequestBody AnprRequestDTO body);
 
+//    @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
+//    AnprResponseDTO getAnprFamily(
+//            @Valid @RequestBody AnprRequestDTO body);
     @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
-    AnprResponseDTO getAnprFamily(
+    public ResponseEntity<AnprResponseDTO> getAnprFamily(
             @Valid @RequestBody AnprRequestDTO body);
 
 }

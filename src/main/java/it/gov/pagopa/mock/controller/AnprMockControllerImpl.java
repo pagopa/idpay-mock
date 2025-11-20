@@ -5,8 +5,6 @@ import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.service.anpr_family.AnprMockFamilyGeneratorService;
 import it.gov.pagopa.mock.service.anpr_residence.AnprMockGeneratorService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -27,17 +25,34 @@ public class AnprMockControllerImpl implements AnprMockController {
         log.info("[MOCK_ANPR] Returning {}", anprResidence);
         return anprResidence;
     }
+    /** ANPR user found*/
+    /*
+        @Override
+    public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
+       AnprResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprFamily(body);
+        log.info("[MOCK_ANPR_FAMILY] Returning {}", anprResidence);
+        return anprResidence;
+    }
+     */
 
+    /** ANPR user not found found*/
+
+    @Override
+    public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
+       AnprResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprAnomalyFamily();
+        log.info("[MOCK_ANPR_FAMILY][ANOMALY_FOUND] Returning {}", anprResidence);
+        return anprResidence;
+    }
+
+
+
+    /** ANPR Too Many Request */
+    /*
     @Override
     public ResponseEntity<AnprResponseDTO> getAnprFamily(AnprRequestDTO body) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
     }
+     */
 
-//    @Override
-//    public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
-////        AnprResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprFamily(body);
-////        log.info("[MOCK_ANPR_FAMILY] Returning {}", anprResidence);
-////        return anprResidence;
-//        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many requests to ANPR service (HTTP 429)");
-//    }
+
 }

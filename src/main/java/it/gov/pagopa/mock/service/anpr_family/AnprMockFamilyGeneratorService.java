@@ -5,4 +5,5 @@ import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 
 public interface AnprMockFamilyGeneratorService {
     AnprResponseDTO getAnprFamily(AnprRequestDTO anprRequestDTO);
+    AnprResponseDTO getAnprAnomalyFamily();
 }

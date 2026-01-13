@@ -28,17 +28,17 @@ public class AnprMockControllerImpl implements AnprMockController {
         log.info("[MOCK_ANPR] Returning {}", anprResidence);
         return anprResidence;
     }
-    /** ANPR user found*/
-    /*
+    /** ANPR user found ok*/
+
         @Override
     public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
        AnprResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprFamily(body);
         log.info("[MOCK_ANPR_FAMILY] Returning {}", anprResidence);
         return anprResidence;
     }
-     */
 
-    /** ANPR user not 200 found found */
+
+    /** ANPR user not 200 found found
 
     @Override
     public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
@@ -46,6 +46,8 @@ public class AnprMockControllerImpl implements AnprMockController {
         log.info("[MOCK_ANPR_FAMILY][ANOMALY_FOUND] Returning {}", anprResidence);
         return anprResidence;
     }
+
+    */
 
 
 

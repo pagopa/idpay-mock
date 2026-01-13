@@ -9,6 +9,7 @@ import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.anpr.*;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -33,11 +34,14 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     private final FamilyMockGeneratorService familyMockGeneratorService;
     private final EncryptRestConnector encryptRestConnector;
     private final DecryptRestConnector decryptRestConnector;
+    private final String familyAnomalyCode;
 
-    public AnprMockFamilyGeneratorServiceImpl(FamilyMockGeneratorService familyMockGeneratorService, EncryptRestConnector encryptRestConnector, DecryptRestConnector decryptRestConnector) {
+    public AnprMockFamilyGeneratorServiceImpl(FamilyMockGeneratorService familyMockGeneratorService, EncryptRestConnector encryptRestConnector, DecryptRestConnector decryptRestConnector,
+                                              @Value("${mocks.pdnd.family.anomaly}") String familyAnomalyCode) {
         this.familyMockGeneratorService = familyMockGeneratorService;
         this.encryptRestConnector = encryptRestConnector;
         this.decryptRestConnector = decryptRestConnector;
+        this.familyAnomalyCode = familyAnomalyCode;
     }
 
     @Override
@@ -166,7 +170,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         response.setIdOperazioneANPR(String.valueOf(System.currentTimeMillis()));
 
         ErroriAnomalia anomalia = ErroriAnomalia.builder()
-                .codiceErroreAnomalia("TEST001")
+                .codiceErroreAnomalia(familyAnomalyCode)
                 .testoErroreAnomalia("Anomaly test")
                 .tipoErroreAnomalia("A").build();
         response.setListaAnomalie(List.of(anomalia));
@@ -180,7 +184,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         response.setIdOperazioneANPR(String.valueOf(System.currentTimeMillis()));
 
         ErroriAnomalia anomalia = ErroriAnomalia.builder()
-                .codiceErroreAnomalia("TEST001")
+                .codiceErroreAnomalia(familyAnomalyCode)
                 .testoErroreAnomalia("Anomaly test")
                 .tipoErroreAnomalia("E").build();
         response.setListaErrori(List.of(anomalia));

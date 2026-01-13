@@ -1,19 +1,18 @@
 package it.gov.pagopa.mock.dto.anpr;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class AnprKoResponseDTO {
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder(toBuilder = true)
+public class AnprKoResponseDTO extends AnprResponseBase{
 
-    private String idOperazioneANPR;
+
     private List<ErroriAnomalia> listaErrori;
 
 }

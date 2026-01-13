@@ -11,7 +11,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
 public class AnprResponseDTO extends AnprResponseBase{
-
     private ListaSoggetti listaSoggetti;
     private List<ErroriAnomalia> listaAnomalie;
 

@@ -22,7 +22,7 @@ public class AnprMockControllerImpl implements AnprMockController {
 
     public AnprMockControllerImpl(AnprMockGeneratorService anprMockGeneratorService,
                                   AnprMockFamilyGeneratorService anprMockFamilyGeneratorService,
-                                  @Value("{mocks.pdnd.family.response-type}") FamilyResponseTypeEnum anprResponseType) {
+                                  @Value("${mocks.pdnd.family.response-type}") FamilyResponseTypeEnum anprResponseType) {
         this.anprMockGeneratorService = anprMockGeneratorService;
         this.anprMockFamilyGeneratorService = anprMockFamilyGeneratorService;
         this.anprResponseType = anprResponseType;

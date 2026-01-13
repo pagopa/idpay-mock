@@ -1,10 +1,13 @@
 package it.gov.pagopa.mock.controller;
 
+import it.gov.pagopa.mock.dto.anpr.AnprKoResponseDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
 import it.gov.pagopa.mock.service.anpr_family.AnprMockFamilyGeneratorService;
 import it.gov.pagopa.mock.service.anpr_residence.AnprMockGeneratorService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -35,7 +38,7 @@ public class AnprMockControllerImpl implements AnprMockController {
     }
      */
 
-    /** ANPR user not found found*/
+    /** ANPR user not found found
 
     @Override
     public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
@@ -43,7 +46,7 @@ public class AnprMockControllerImpl implements AnprMockController {
         log.info("[MOCK_ANPR_FAMILY][ANOMALY_FOUND] Returning {}", anprResidence);
         return anprResidence;
     }
-
+    */
 
 
     /** ANPR Too Many Request */
@@ -53,6 +56,17 @@ public class AnprMockControllerImpl implements AnprMockController {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
     }
      */
+
+    /** ANPR user not found found HTTP*/
+
+    @Override
+    public ResponseEntity<AnprKoResponseDTO> getAnprFamily(AnprRequestDTO body) {
+        AnprKoResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprAnomalyError();
+        log.info("[MOCK_ANPR_FAMILY][ANOMALY_FOUND] Returning {}", anprResidence);
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(anprResidence);
+    }
 
 
 }

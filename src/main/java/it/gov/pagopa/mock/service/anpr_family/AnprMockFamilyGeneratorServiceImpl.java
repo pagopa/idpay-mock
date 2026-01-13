@@ -173,4 +173,18 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
 
         return response;
     }
+
+    @Override
+    public AnprKoResponseDTO getAnprAnomalyError() {
+        AnprKoResponseDTO response = new AnprKoResponseDTO();
+        response.setIdOperazioneANPR(String.valueOf(System.currentTimeMillis()));
+
+        ErroriAnomalia anomalia = ErroriAnomalia.builder()
+                .codiceErroreAnomalia("TEST001")
+                .testoErroreAnomalia("Anomaly test")
+                .tipoErroreAnomalia("E").build();
+        response.setListaErrori(List.of(anomalia));
+
+        return response;
+    }
 }

@@ -18,16 +18,16 @@ public interface AnprMockController {
     AnprResponseDTO getAnprResidence(
             @Valid @RequestBody AnprRequestDTO body);
 
-//    @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
-//    AnprResponseDTO getAnprFamily(
-//            @Valid @RequestBody AnprRequestDTO body);
+    @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
+    AnprResponseDTO getAnprFamily(
+            @Valid @RequestBody AnprRequestDTO body);
 
 //    @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
 //    public ResponseEntity<AnprResponseDTO> getAnprFamily(
 //            @Valid @RequestBody AnprRequestDTO body);
 
-    @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
-    ResponseEntity<AnprKoResponseDTO> getAnprFamily(
-            @Valid @RequestBody AnprRequestDTO body);
+//    @PostMapping("/C021-servizioAccertamentoStatoFamiglia/v1/anpr-service-e002")
+//    ResponseEntity<AnprKoResponseDTO> getAnprFamily(
+//            @Valid @RequestBody AnprRequestDTO body);
 
 }

@@ -38,7 +38,7 @@ public class AnprMockControllerImpl implements AnprMockController {
     }
      */
 
-    /** ANPR user not found found
+    /** ANPR user not 200 found found */
 
     @Override
     public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
@@ -46,7 +46,7 @@ public class AnprMockControllerImpl implements AnprMockController {
         log.info("[MOCK_ANPR_FAMILY][ANOMALY_FOUND] Returning {}", anprResidence);
         return anprResidence;
     }
-    */
+
 
 
     /** ANPR Too Many Request */
@@ -57,8 +57,7 @@ public class AnprMockControllerImpl implements AnprMockController {
     }
      */
 
-    /** ANPR user not found found HTTP*/
-
+    /** ANPR user not found found HTTP
     @Override
     public ResponseEntity<AnprKoResponseDTO> getAnprFamily(AnprRequestDTO body) {
         AnprKoResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprAnomalyError();
@@ -67,6 +66,6 @@ public class AnprMockControllerImpl implements AnprMockController {
                 .status(HttpStatus.NOT_FOUND)
                 .body(anprResidence);
     }
-
+*/
 
 }

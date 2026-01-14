@@ -63,7 +63,7 @@ steps:
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
-      goals: 'sonar:sonar'
+      goals: 'org.sonarsource.scanner.maven:sonar-maven-plugin:sonar'
       options: '-B -Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths)'
       publishJUnitResults: false
       javaHomeOption: 'JDKVersion'

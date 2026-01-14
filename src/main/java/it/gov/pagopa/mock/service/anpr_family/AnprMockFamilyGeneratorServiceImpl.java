@@ -9,6 +9,7 @@ import it.gov.pagopa.mock.dto.Family;
 import it.gov.pagopa.mock.dto.anpr.*;
 import it.gov.pagopa.mock.service.family.FamilyMockGeneratorService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGeneratorService{
+public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGeneratorService {
 
     private static final List<String> NAME = List.of("MARIO", "LUCA", "GIUSEPPE", "ANDREA", "PAOLO", "ELENA", "MARIA", "LUCIA");
     private static final List<String> SURNAME = List.of("ROSSI", "BIANCHI", "VERDI", "FERRARI", "RICCI");
@@ -33,11 +34,14 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     private final FamilyMockGeneratorService familyMockGeneratorService;
     private final EncryptRestConnector encryptRestConnector;
     private final DecryptRestConnector decryptRestConnector;
+    private final String familyAnomalyCode;
 
-    public AnprMockFamilyGeneratorServiceImpl(FamilyMockGeneratorService familyMockGeneratorService, EncryptRestConnector encryptRestConnector, DecryptRestConnector decryptRestConnector) {
+    public AnprMockFamilyGeneratorServiceImpl(FamilyMockGeneratorService familyMockGeneratorService, EncryptRestConnector encryptRestConnector, DecryptRestConnector decryptRestConnector,
+                                              @Value("${mocks.pdnd.family.anomaly}") String familyAnomalyCode) {
         this.familyMockGeneratorService = familyMockGeneratorService;
         this.encryptRestConnector = encryptRestConnector;
         this.decryptRestConnector = decryptRestConnector;
+        this.familyAnomalyCode = familyAnomalyCode;
     }
 
     @Override
@@ -61,7 +65,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         }).toList();
         List<DatiSoggetto> allFamilyMembers = new ArrayList<>(familyMembers);
 
-        if(family.getMinorMemberIds() != null && !family.getMinorMemberIds().isEmpty()) {
+        if (family.getMinorMemberIds() != null && !family.getMinorMemberIds().isEmpty()) {
             log.info("[FAMILY_MOCKED] Family with ID {} has {} minor members", family.getFamilyId(), familyMembers.size());
             List<DatiSoggetto> familyMinorMembers = family.getMinorMemberIds().stream().map(user -> {
                 DecryptCfDTO decrypted = decryptRestConnector.getPiiByToken(user);
@@ -79,7 +83,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
     }
 
 
-    public AnprResponseDTO generateFamily(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18){
+    public AnprResponseDTO generateFamily(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18) {
         return AnprResponseDTO.builder()
                 .listaSoggetti(ListaSoggetti.builder()
                         .datiSoggetto(List.of(createDatiSoggetto(codiceFiscale, nomeComune, cap, siglaProvincia, isOver18)))
@@ -93,7 +97,7 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         return lista.get(index);
     }
 
-    private DatiSoggetto createDatiSoggetto(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18){
+    private DatiSoggetto createDatiSoggetto(String codiceFiscale, String nomeComune, String cap, String siglaProvincia, boolean isOver18) {
         Comune comune = Comune.builder()
                 .codiceIstat("123456")
                 .nomeComune(nomeComune)
@@ -160,4 +164,31 @@ public class AnprMockFamilyGeneratorServiceImpl implements AnprMockFamilyGenerat
         return randomDate.format(FORMATTER);
     }
 
+    @Override
+    public AnprResponseDTO getAnprAnomalyFamily() {
+        AnprResponseDTO response = new AnprResponseDTO();
+        response.setIdOperazioneANPR(String.valueOf(System.currentTimeMillis()));
+
+        ErroriAnomalia anomalia = ErroriAnomalia.builder()
+                .codiceErroreAnomalia(familyAnomalyCode)
+                .testoErroreAnomalia("Anomaly test")
+                .tipoErroreAnomalia("A").build();
+        response.setListaAnomalie(List.of(anomalia));
+
+        return response;
+    }
+
+    @Override
+    public AnprKoResponseDTO getAnprAnomalyError() {
+        AnprKoResponseDTO response = new AnprKoResponseDTO();
+        response.setIdOperazioneANPR(String.valueOf(System.currentTimeMillis()));
+
+        ErroriAnomalia anomalia = ErroriAnomalia.builder()
+                .codiceErroreAnomalia(familyAnomalyCode)
+                .testoErroreAnomalia("Anomaly test")
+                .tipoErroreAnomalia("E").build();
+        response.setListaErrori(List.of(anomalia));
+
+        return response;
+    }
 }

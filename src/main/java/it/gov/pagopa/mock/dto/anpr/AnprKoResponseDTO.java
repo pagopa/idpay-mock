@@ -10,8 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
-public class AnprResponseDTO extends AnprResponseBase{
-    private ListaSoggetti listaSoggetti;
-    private List<ErroriAnomalia> listaAnomalie;
+public class AnprKoResponseDTO extends AnprResponseBase{
+    private List<ErroriAnomalia> listaErrori;
 
 }

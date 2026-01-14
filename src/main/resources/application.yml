@@ -72,3 +72,6 @@ mocks:
   pdnd:
     expected:
       audience: ${PDND_MOCK_EXPECTED_AUDIENCE:auth.uat.interop.pagopa.it/client-assertion}
+    family:
+      response-type: ${MOCK_FAMILY_RESPONSE_TYPE:OK} #Must match one of the values in FamilyResponseTypeEnum
+      anomaly: ${MOCK_FAMILY_ANOMALY_CODE:TEST001}

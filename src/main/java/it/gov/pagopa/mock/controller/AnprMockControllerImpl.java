@@ -1,10 +1,15 @@
 package it.gov.pagopa.mock.controller;
 
 import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
+import it.gov.pagopa.mock.dto.anpr.AnprResponseBase;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;
+import it.gov.pagopa.mock.enums.FamilyResponseTypeEnum;
 import it.gov.pagopa.mock.service.anpr_family.AnprMockFamilyGeneratorService;
 import it.gov.pagopa.mock.service.anpr_residence.AnprMockGeneratorService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -13,10 +18,14 @@ public class AnprMockControllerImpl implements AnprMockController {
 
     private final AnprMockGeneratorService anprMockGeneratorService;
     private final AnprMockFamilyGeneratorService anprMockFamilyGeneratorService;
+    private final FamilyResponseTypeEnum anprResponseType;
 
-    public AnprMockControllerImpl(AnprMockGeneratorService anprMockGeneratorService, AnprMockFamilyGeneratorService anprMockFamilyGeneratorService) {
+    public AnprMockControllerImpl(AnprMockGeneratorService anprMockGeneratorService,
+                                  AnprMockFamilyGeneratorService anprMockFamilyGeneratorService,
+                                  @Value("${mocks.pdnd.family.response-type}") FamilyResponseTypeEnum anprResponseType) {
         this.anprMockGeneratorService = anprMockGeneratorService;
         this.anprMockFamilyGeneratorService = anprMockFamilyGeneratorService;
+        this.anprResponseType = anprResponseType;
     }
 
     @Override
@@ -26,10 +35,31 @@ public class AnprMockControllerImpl implements AnprMockController {
         return anprResidence;
     }
 
+    /** ANPR user found ok*/
+
     @Override
-    public AnprResponseDTO getAnprFamily(AnprRequestDTO body) {
-        AnprResponseDTO anprResidence = anprMockFamilyGeneratorService.getAnprFamily(body);
-        log.info("[MOCK_ANPR_FAMILY] Returning {}", anprResidence);
-        return anprResidence;
+    public ResponseEntity<AnprResponseBase> getAnprFamily(AnprRequestDTO body) {
+        return switch (anprResponseType) {
+            case OK_WITH_ANOMALY -> {
+                log.info("[MOCK_FAMILY] Performing mock response: HTTP 200 with anomaly code");
+                yield ResponseEntity.status(HttpStatus.OK)
+                        .body(anprMockFamilyGeneratorService.getAnprAnomalyFamily());
+            }
+            case KO_404_ERROR_ANOMALY -> {
+                log.info("[MOCK_FAMILY] Performing mock response: HTTP 404 with anomaly code");
+                yield ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(anprMockFamilyGeneratorService.getAnprAnomalyError());
+            }
+            case TOO_MANY_REQUEST -> {
+                log.info("[MOCK_FAMILY] Performing mock response: HTTP 429");
+                yield ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+            }
+            default -> {
+                log.info("[MOCK_FAMILY] Performing mock response: HTTP 200");
+                yield ResponseEntity.status(HttpStatus.OK)
+                        .body(anprMockFamilyGeneratorService.getAnprFamily(body));
+            }
+        };
     }
+
 }

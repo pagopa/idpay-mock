@@ -39,26 +39,27 @@ public class AnprMockControllerImpl implements AnprMockController {
 
     @Override
     public ResponseEntity<AnprResponseBase> getAnprFamily(AnprRequestDTO body) {
-        switch (anprResponseType){
+        return switch (anprResponseType) {
             case OK_WITH_ANOMALY -> {
                 log.info("[MOCK_FAMILY] Performing mock response: HTTP 200 with anomaly code");
-                return  ResponseEntity.status(HttpStatus.OK)
+                yield ResponseEntity.status(HttpStatus.OK)
                         .body(anprMockFamilyGeneratorService.getAnprAnomalyFamily());
             }
             case KO_404_ERROR_ANOMALY -> {
                 log.info("[MOCK_FAMILY] Performing mock response: HTTP 404 with anomaly code");
-                return  ResponseEntity.status(HttpStatus.NOT_FOUND)
+                yield ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(anprMockFamilyGeneratorService.getAnprAnomalyError());
             }
             case TOO_MANY_REQUEST -> {
                 log.info("[MOCK_FAMILY] Performing mock response: HTTP 429");
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();}
+                yield ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+            }
             default -> {
                 log.info("[MOCK_FAMILY] Performing mock response: HTTP 200");
-                return  ResponseEntity.status(HttpStatus.OK)
+                yield ResponseEntity.status(HttpStatus.OK)
                         .body(anprMockFamilyGeneratorService.getAnprFamily(body));
             }
-        }
+        };
     }
 
 }

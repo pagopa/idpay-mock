@@ -132,4 +132,33 @@ public class PdndMockServiceImpl implements PdndMockService {
         );
     }
 
+    public byte[] getRawInstitutionDetail(String taxCode) {
+        String xml = buildFakeVisuraXml(taxCode);
+        return xml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String buildFakeVisuraXml(String taxCode) {
+        return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <VisuraImpresa>
+                    <DatiIdentificativi>
+                        <PartitaIVA>%s</PartitaIVA>
+                        <CodiceFiscale>%s</CodiceFiscale>
+                        <Denominazione>Azienda Fake Test Srl</Denominazione>
+                    </DatiIdentificativi>
+                    <AttivitaEconomiche>
+                        <Attivita>
+                            <CodiceAteco>47.11.10</CodiceAteco>
+                            <Descrizione>Commercio al dettaglio in esercizi non specializzati</Descrizione>
+                            <Principale>true</Principale>
+                        </Attivita>
+                        <Attivita>
+                            <CodiceAteco>56.10.11</CodiceAteco>
+                            <Descrizione>Ristorazione con somministrazione</Descrizione>
+                            <Principale>false</Principale>
+                        </Attivita>
+                    </AttivitaEconomiche>
+                </VisuraImpresa>
+                """.formatted(taxCode, taxCode);
+    }
 }

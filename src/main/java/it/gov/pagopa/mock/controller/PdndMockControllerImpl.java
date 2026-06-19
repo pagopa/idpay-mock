@@ -4,9 +4,10 @@ import it.gov.pagopa.mock.openapi.pdnd.api.TokenOauth2Api;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -28,5 +29,17 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
         } else {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping(value = "/dettaglio/codicefiscale", produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<byte[]> getRawInstitutionDetail(
+            @RequestParam("codiceFiscale") String codiceFiscale,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+
+        log.info("[MOCK_PDND] Returning PDND fake visura for codiceFiscale {}", codiceFiscale);
+        byte[] xml = pdndMockService.getRawInstitutionDetail(codiceFiscale);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .body(xml);
     }
 }

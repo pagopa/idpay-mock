@@ -141,23 +141,18 @@ public class PdndMockServiceImpl implements PdndMockService {
         return """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <VisuraImpresa>
-                    <DatiIdentificativi>
-                        <PartitaIVA>%s</PartitaIVA>
-                        <CodiceFiscale>%s</CodiceFiscale>
-                        <Denominazione>Azienda Fake Test Srl</Denominazione>
-                    </DatiIdentificativi>
-                    <AttivitaEconomiche>
-                        <Attivita>
-                            <CodiceAteco>47.11.10</CodiceAteco>
-                            <Descrizione>Commercio al dettaglio in esercizi non specializzati</Descrizione>
-                            <Principale>true</Principale>
-                        </Attivita>
-                        <Attivita>
-                            <CodiceAteco>56.10.11</CodiceAteco>
-                            <Descrizione>Ristorazione con somministrazione</Descrizione>
-                            <Principale>false</Principale>
-                        </Attivita>
-                    </AttivitaEconomiche>
+                    <info-attivita>
+                        <classificazioni-ateco>
+                            <classificazione-ateco\s
+                                c-attivita="47.11.10"
+                                attivita="Commercio al dettaglio"
+                                c-importanza="1"/>
+                            <classificazione-ateco\s
+                                c-attivita="56.10.11"
+                                attivita="Ristorazione"
+                                c-importanza="2"/>
+                        </classificazioni-ateco>
+                    </info-attivita>
                 </VisuraImpresa>
                 """.formatted(taxCode, taxCode);
     }

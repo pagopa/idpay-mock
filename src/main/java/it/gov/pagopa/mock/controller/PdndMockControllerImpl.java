@@ -9,10 +9,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.regex.Pattern;
+
 @Slf4j
 @RestController
 @RequestMapping("/idpay/mock/pdnd")
 public class PdndMockControllerImpl implements TokenOauth2Api {
+
+    private static final Pattern CODICE_FISCALE_PATTERN = Pattern.compile("^[A-Z0-9]{16}$");
 
     private final PdndMockService pdndMockService;
 
@@ -36,12 +40,21 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
             @RequestParam("codiceFiscale") String codiceFiscale,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
 
-        String sanitizedCodiceFiscaleForLog = sanitizeForLog(codiceFiscale);
+        String normalizedCodiceFiscale = codiceFiscale == null ? null : codiceFiscale.trim().toUpperCase();
+        if (!isValidCodiceFiscale(normalizedCodiceFiscale)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String sanitizedCodiceFiscaleForLog = sanitizeForLog(normalizedCodiceFiscale);
         log.info("[MOCK_PDND] Returning PDND fake visura for codiceFiscale {}", sanitizedCodiceFiscaleForLog);
-        byte[] xml = pdndMockService.getRawInstitutionDetail(codiceFiscale);
+        byte[] xml = pdndMockService.getRawInstitutionDetail(normalizedCodiceFiscale);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .body(xml);
+    }
+
+    private boolean isValidCodiceFiscale(String codiceFiscale) {
+        return codiceFiscale != null && CODICE_FISCALE_PATTERN.matcher(codiceFiscale).matches();
     }
 
     private String sanitizeForLog(String value) {

@@ -36,10 +36,18 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
             @RequestParam("codiceFiscale") String codiceFiscale,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
 
-        log.info("[MOCK_PDND] Returning PDND fake visura for codiceFiscale {}", codiceFiscale);
+        String sanitizedCodiceFiscaleForLog = sanitizeForLog(codiceFiscale);
+        log.info("[MOCK_PDND] Returning PDND fake visura for codiceFiscale {}", sanitizedCodiceFiscaleForLog);
         byte[] xml = pdndMockService.getRawInstitutionDetail(codiceFiscale);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .body(xml);
+    }
+
+    private String sanitizeForLog(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replaceAll("[\\r\\n\\t\\f\\u0000-\\u001F\\u007F]", "_");
     }
 }

@@ -46,8 +46,20 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
 
     private String sanitizeForLog(String value) {
         if (value == null) {
-            return null;
+            return "<null>";
         }
-        return value.replaceAll("[\\r\\n\\t\\f\\u0000-\\u001F\\u007F]", "_");
+
+        String sanitized = value
+                .replace('\n', '_')
+                .replace('\r', '_')
+                .replace('\t', '_')
+                .replace('\f', '_')
+                .replace('\u0000', '_');
+
+        if (sanitized.length() > 256) {
+            sanitized = sanitized.substring(0, 256) + "...";
+        }
+
+        return sanitized;
     }
 }

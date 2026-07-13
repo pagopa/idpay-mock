@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 @RequestMapping("/idpay/mock/pdnd")
 public class PdndMockControllerImpl implements TokenOauth2Api {
 
-    private static final Pattern CODICE_FISCALE_PATTERN =
-            Pattern.compile("^[A-Z0-9]{16}$");
+    private static final Pattern TAX_ID_PATTERN =
+            Pattern.compile("^(?:[A-Z0-9]{16}|\\d{11})$");
 
     private final PdndMockService pdndMockService;
 
@@ -32,22 +32,20 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
             String grantType,
             String clientId) {
 
-        ClientCredentialsResponseDTO token =
-                pdndMockService.createToken(
-                        clientAssertion,
-                        clientAssertionType,
-                        grantType,
-                        clientId);
+        ClientCredentialsResponseDTO token = pdndMockService.createToken(
+                clientAssertion,
+                clientAssertionType,
+                grantType,
+                clientId);
 
         if (token != null) {
             log.info(
-                    "[MOCK_PDND] Returning PDND fake accessToken for clientId {} and clientAssertion {}",
-                    clientId,
-                    clientAssertion);
-
+                    "[MOCK_PDND] Returning fake accessToken for clientId {}",
+                    sanitizeForLog(clientId));
             return ResponseEntity.ok(token);
         }
 
+        log.warn("[MOCK_PDND] Token creation rejected for clientId {}", sanitizeForLog(clientId));
         return ResponseEntity.badRequest().build();
     }
 
@@ -56,38 +54,36 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
             produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<byte[]> getRawInstitutionDetail(
             @RequestParam("codiceFiscale") String codiceFiscale,
-            @RequestHeader(
-                    value = HttpHeaders.AUTHORIZATION,
-                    required = false)
-            String authorization) {
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
 
-        String normalizedCodiceFiscale = codiceFiscale == null
-                ? null
-                : codiceFiscale.trim().toUpperCase();
+        String normalizedTaxId = normalize(codiceFiscale);
 
-        if (!isValidCodiceFiscale(normalizedCodiceFiscale)) {
+        if (!isValidTaxId(normalizedTaxId)) {
+            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", sanitizeForLog(normalizedTaxId));
             return ResponseEntity.badRequest().build();
         }
 
         log.info(
-                "[MOCK_PDND] Returning PDND fake visura for codiceFiscale {}",
-                sanitizeForLog(normalizedCodiceFiscale));
+                "[MOCK_PDND] Returning fake visura for codiceFiscale {} (auth header present: {})",
+                sanitizeForLog(normalizedTaxId),
+                authorization != null && !authorization.isBlank());
 
-        byte[] xml =
-                pdndMockService.getRawInstitutionDetail("MOCKCF0000000000");
+        byte[] xml = pdndMockService.getRawInstitutionDetail(normalizedTaxId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .body(xml);
     }
 
-    private boolean isValidCodiceFiscale(String codiceFiscale) {
-        return codiceFiscale != null
-                && CODICE_FISCALE_PATTERN.matcher(codiceFiscale).matches();
+    private String normalize(String value) {
+        return value == null ? null : value.trim().toUpperCase();
+    }
+
+    private boolean isValidTaxId(String taxId) {
+        return taxId != null && TAX_ID_PATTERN.matcher(taxId).matches();
     }
 
     private String sanitizeForLog(String value) {
-
         if (value == null) {
             return "<null>";
         }

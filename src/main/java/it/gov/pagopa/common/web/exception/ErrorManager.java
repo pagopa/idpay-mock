@@ -57,7 +57,19 @@ public class ErrorManager {
     }
 
     public static String getRequestDetails(HttpServletRequest request) {
-        return "%s %s".formatted(request.getMethod(), request.getRequestURI());
+        return "%s %s".formatted(
+                sanitizeForLog(request.getMethod()),
+                sanitizeForLog(request.getRequestURI()));
+    }
+
+    private static String sanitizeForLog(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return value
+                .replace('\r', ' ')
+                .replace('\n', ' ')
+                .replaceAll("\\p{Cntrl}", "?");
     }
 
 }

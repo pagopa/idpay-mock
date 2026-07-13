@@ -10,11 +10,13 @@ import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoCon
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
@@ -66,4 +68,42 @@ class PdndMockControllerTest {
                 .andReturn();
     }
 
+    @Test
+    void getRawInstitutionDetail_ok() throws Exception {
+        String validCodiceFiscale = "ABCDEF12G34H567I";
+
+        MvcResult result = mockMvc.perform(
+                        get("/idpay/mock/pdnd/dettaglio/codicefiscale")
+                                .param("codiceFiscale", validCodiceFiscale)
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer validToken")
+                                .accept(MediaType.APPLICATION_XML)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        Assertions.assertTrue(result.getResponse().getContentAsString().contains("<VisuraImpresa>"));
+    }
+
+    @Test
+    void getRawInstitutionDetail_invalidCodiceFiscale() throws Exception {
+        String invalidCodiceFiscale = "INVALID_CF";
+
+        mockMvc.perform(
+                        get("/idpay/mock/pdnd/dettaglio/codicefiscale")
+                                .param("codiceFiscale", invalidCodiceFiscale)
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer validToken")
+                                .accept(MediaType.APPLICATION_XML)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void getRawInstitutionDetail_missingCodiceFiscale() throws Exception {
+        mockMvc.perform(
+                        get("/idpay/mock/pdnd/dettaglio/codicefiscale")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer validToken")
+                                .accept(MediaType.APPLICATION_XML)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
 }

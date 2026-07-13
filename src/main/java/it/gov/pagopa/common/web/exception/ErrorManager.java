@@ -21,7 +21,12 @@ public class ErrorManager {
     @ExceptionHandler(RuntimeException.class)
     protected ResponseEntity<ErrorDTO> handleException(RuntimeException error, HttpServletRequest request) {
         if(!(error instanceof ClientException clientException) || clientException.isPrintStackTrace() || clientException.getCause() != null){
-            log.error("Something went wrong handling request {}", getRequestDetails(request), error);
+            if (error instanceof ClientException ce) {
+                log.error("Something went wrong handling request {}: HttpStatus {} - {}",
+                        getRequestDetails(request), ce.getHttpStatus(), ce.getMessage(), error);
+            } else {
+                log.error("Something went wrong handling request {}", getRequestDetails(request), error);
+            }
         } else {
             log.info("A {} occurred handling request {}: HttpStatus {} - {} at {}",
                     clientException.getClass().getSimpleName(),

@@ -1,16 +1,30 @@
 package it.gov.pagopa.mock.controller;
 
-import it.gov.pagopa.mock.BaseIntegrationTest;
+import it.gov.pagopa.common.config.JsonConfig;
 import it.gov.pagopa.mock.service.pdnd.PdndMockServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-class PdndMockControllerTest extends BaseIntegrationTest {
+
+@WebMvcTest(value={PdndMockControllerImpl.class}, excludeAutoConfiguration =  { UserDetailsServiceAutoConfiguration.class , SecurityAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
+@Import({JsonConfig.class, PdndMockServiceImpl.class})
+class PdndMockControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
 
     private static final String CLIENT_ASSERTION = "eyJraWQiOiJyM2VlOHdaMzlmeHE3MUxpbmJZRGdwb0hleXdidXpMeWM0eW5WbGRFQUtZIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJDTElFTlRJRCIsImF1ZCI6ImF1dGgudWF0LmludGVyb3AucGFnb3BhLml0L2NsaWVudC1hc3NlcnRpb24iLCJkaWdlc3QiOnsidmFsdWUiOiJGQjA4NUZDQkZGODIwNkMyMTRDQjNCNDIzQjVCQkQ3RDIxNDYwNzgxOUY3Mjk5RjA3NjJFRTcyOTAyMzlENzUzIiwiYWxnIjoiU0hBMjU2In0sImlzcyI6IkNMSUVOVElEIiwicHVycG9zZUlkIjoiUFVSUE9TRUlEIiwiZXhwIjoxNjk2MDEwMzQ1LCJpYXQiOjE2OTYwMDk5MjUsImp0aSI6IjVmNGEwOTNjLWQwYmMtNDAzMi05MWRjLTI1ZWM5MTRkOGU0YSJ9.bah-zp6lbBf8F9vEaGjyv7gE-DfF8iOnTlBde-NBZlIU3adrs5Nvvgccqc_DCzd5jsEHMOg2Z1dWjGdVcBOWUFDlQFuVRVUNJaxiYpisUPJmTxezV9sOCxGlIebrQJunC2u9wH8PYxqH_xQelvecoxIT9QX7naI6JtnX6uKUUzKNET4JiUB3NkKZtuL37ff7PBh6g-iuTWQO6MWijXB9SKCCrhWUuV64FKhE4_mgTfRdlI0zGcAjq71oplQ6OdoHq-KN4HeTF3Z-w0t2QLEHhAHzkYuhCG0UnfgNnJe4IsnEDomX1mZI5vroP7MFzlW7Q6yTq8ToVjqKt21u9fE-yg";
 

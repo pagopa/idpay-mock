@@ -140,6 +140,7 @@ public class PdndMockServiceImpl implements PdndMockService {
         return """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <VisuraImpresa>
+                    <codice-fiscale>%s</codice-fiscale>
                     <info-attivita>
                         <classificazioni-ateco>
                             <classificazione-ateco\s
@@ -153,6 +154,6 @@ public class PdndMockServiceImpl implements PdndMockService {
                         </classificazioni-ateco>
                     </info-attivita>
                 </VisuraImpresa>
-                """.formatted(taxCode, taxCode);
+                """.formatted(StringUtils.defaultString(taxCode));
     }
 }

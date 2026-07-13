@@ -1,6 +1,5 @@
 package it.gov.pagopa.mock.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockServiceImpl;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.when;
 class PdndMockServiceImplTest {
 
     @Mock
-    private ObjectMapper objectMapper;
+    private tools.jackson.databind.ObjectMapper objectMapper;
 
     private PdndMockServiceImpl pdndMockService;
 

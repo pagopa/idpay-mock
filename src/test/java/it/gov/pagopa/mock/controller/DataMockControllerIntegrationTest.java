@@ -174,7 +174,7 @@ class DataMockControllerIntegrationTest {
         ));
 
         storeIsee(mockMvc, objectMapper, "CF_OK", request);
-        verify(iseeMockService).saveIsee(eq("CF_OK"), eq(request.getIseeTypeMap()));
+        verify(iseeMockService).saveIsee(("CF_OK"), (request.getIseeTypeMap()));
     }
 
     protected MvcResult getFamily(String userId) throws Exception {

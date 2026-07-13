@@ -12,8 +12,6 @@ import it.gov.pagopa.mock.service.DataMockService;
 import it.gov.pagopa.mock.service.isee.IseeMockService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
-import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -38,8 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-@WebMvcTest(value = DataMockControllerImpl.class,
-        excludeAutoConfiguration = {UserDetailsServiceAutoConfiguration.class, SecurityAutoConfiguration.class})
+@WebMvcTest(value = DataMockControllerImpl.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import(JsonConfig.class)
 class DataMockControllerIntegrationTest {

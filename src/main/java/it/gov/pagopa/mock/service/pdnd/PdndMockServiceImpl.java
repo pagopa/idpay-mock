@@ -1,6 +1,5 @@
 package it.gov.pagopa.mock.service.pdnd;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
 import lombok.NonNull;
@@ -9,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
+import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -132,4 +131,29 @@ public class PdndMockServiceImpl implements PdndMockService {
         );
     }
 
+    public byte[] getRawInstitutionDetail(String taxCode) {
+        String xml = buildFakeVisuraXml(taxCode);
+        return xml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String buildFakeVisuraXml(String taxCode) {
+        return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <VisuraImpresa>
+                    <codice-fiscale>%s</codice-fiscale>
+                    <info-attivita>
+                        <classificazioni-ateco>
+                            <classificazione-ateco\s
+                                c-attivita="47.11.10"
+                                attivita="Commercio al dettaglio"
+                                c-importanza="1"/>
+                            <classificazione-ateco\s
+                                c-attivita="56.10.11"
+                                attivita="Ristorazione"
+                                c-importanza="2"/>
+                        </classificazioni-ateco>
+                    </info-attivita>
+                </VisuraImpresa>
+                """.formatted(StringUtils.defaultString(taxCode));
+    }
 }

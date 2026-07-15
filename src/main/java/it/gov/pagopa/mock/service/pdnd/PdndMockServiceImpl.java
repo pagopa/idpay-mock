@@ -75,26 +75,28 @@ public class PdndMockServiceImpl implements PdndMockService {
     }
 
     private Map<String, String> validateClaims(String clientId, String[] clientAssertionSplits) throws IOException {
-        @SuppressWarnings("unchecked") Map<String, Object> clientAssertionClaims = objectMapper.readValue(Base64.getDecoder().decode(clientAssertionSplits[1]), Map.class);
+        @SuppressWarnings("unchecked") Map<String, Object> clientAssertionClaims = objectMapper.readValue(decodeJwtPart(clientAssertionSplits[1]), Map.class);
 
         validateExpectedClaim(clientAssertionClaims, "iss", clientId);
         validateExpectedClaim(clientAssertionClaims, "sub", clientId);
-        validateExpectedClaim(clientAssertionClaims, "aud", expectedAudience);
+        validateExpectedAudience(clientAssertionClaims.get("aud"));
 
-        @SuppressWarnings("unchecked") Map<String, String> signedDigest = (Map<String, String>) readMandatoryClaim(clientAssertionClaims, "digest");
+        @SuppressWarnings("unchecked") Map<String, String> signedDigest = (Map<String, String>) clientAssertionClaims.get("digest");
         String signedPurposeId = (String) readMandatoryClaim(clientAssertionClaims, "purposeId");
-        Integer exp = (Integer) readMandatoryClaim(clientAssertionClaims, "exp");
-        Integer iat = (Integer) readMandatoryClaim(clientAssertionClaims, "iat");
+        long exp = readMandatoryNumericClaim(clientAssertionClaims, "exp");
+        long iat = readMandatoryNumericClaim(clientAssertionClaims, "iat");
 
-        return Map.of(
-                "exp", exp+"",
-                "iat", iat+"",
-                "nbf", iat+"",
-                "digest", objectMapper.writeValueAsString(signedDigest),
-                "purposeId", signedPurposeId,
-                "sub", clientId,
-                "client_id", clientId
-        );
+        Map<String, String> claims = new LinkedHashMap<>();
+        claims.put("exp", exp + "");
+        claims.put("iat", iat + "");
+        claims.put("nbf", iat + "");
+        if (!CollectionUtils.isEmpty(signedDigest)) {
+            claims.put("digest", objectMapper.writeValueAsString(signedDigest));
+        }
+        claims.put("purposeId", signedPurposeId);
+        claims.put("sub", clientId);
+        claims.put("client_id", clientId);
+        return claims;
     }
 
     private static void validateExpectedClaim(Map<String, Object> clientAssertionClaims, String claimName, String expectedClaimValue) {
@@ -104,6 +106,18 @@ public class PdndMockServiceImpl implements PdndMockService {
         }
     }
 
+    private void validateExpectedAudience(Object audienceClaim) {
+        if (expectedAudience.equals(audienceClaim)) {
+            return;
+        }
+
+        if (audienceClaim instanceof Collection<?> audienceValues && audienceValues.contains(expectedAudience)) {
+            return;
+        }
+
+        throw new IllegalArgumentException("[PDND_MOCK] Unexpected clientAssertion claims: aud doesn't match: " + audienceClaim);
+    }
+
     @NonNull
     private static Object readMandatoryClaim(Map<String, Object> clientAssertionClaims, String claimName) {
         Object claimValue = clientAssertionClaims.get(claimName);
@@ -111,6 +125,23 @@ public class PdndMockServiceImpl implements PdndMockService {
             throw new IllegalArgumentException("[PDND_MOCK] Unexpected clientAssertion claims: " + claimName + " not provided");
         }
         return claimValue;
+    }
+
+    private static long readMandatoryNumericClaim(Map<String, Object> clientAssertionClaims, String claimName) {
+        Object claimValue = readMandatoryClaim(clientAssertionClaims, claimName);
+        if (claimValue instanceof Number number) {
+            return number.longValue();
+        }
+
+        throw new IllegalArgumentException("[PDND_MOCK] Unexpected clientAssertion claims: " + claimName + " is not numeric");
+    }
+
+    private static byte[] decodeJwtPart(String jwtPart) {
+        try {
+            return Base64.getUrlDecoder().decode(jwtPart);
+        } catch (IllegalArgumentException ignored) {
+            return Base64.getDecoder().decode(jwtPart);
+        }
     }
 
     private String createClaims(Map<String, String> claimsFromRequest) {

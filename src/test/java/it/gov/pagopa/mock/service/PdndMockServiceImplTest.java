@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +36,7 @@ class PdndMockServiceImplTest {
     }
 
     @Test
-    void createToken_validRequest_returnsToken() throws Exception {
+    void createToken_validRequest_returnsToken() {
 
         String clientId = "validClientId";
 
@@ -80,6 +81,43 @@ class PdndMockServiceImplTest {
     }
 
     @Test
+    void createToken_visuraStyleRequestWithoutDigest_returnsToken() {
+
+        String clientId = "validClientId";
+
+        String payload = Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString("{\"dummy\":\"value\"}".getBytes(StandardCharsets.UTF_8));
+
+        String clientAssertion = "header." + payload + ".signature-with-url_safe-characters";
+
+        Map<String, Object> claims = Map.of(
+                "iss", clientId,
+                "sub", clientId,
+                "aud", List.of("expectedAudience"),
+                "purposeId", "purpose",
+                "exp", 1234567890L,
+                "iat", 1234567890L
+        );
+
+        when(objectMapper.readValue(any(byte[].class), eq(Map.class)))
+                .thenReturn(claims);
+
+        ClientCredentialsResponseDTO response =
+                pdndMockService.createToken(
+                        clientAssertion,
+                        PdndMockServiceImpl.EXPECTED_CLIENT_ASSERTION_TYPE,
+                        PdndMockServiceImpl.EXPECTED_GRANT_TYPE,
+                        clientId
+                );
+
+        assertNotNull(response);
+        assertEquals(TokenTypeDTO.BEARER, response.getTokenType());
+        assertEquals(600, response.getExpiresIn());
+        assertNotNull(response.getAccessToken());
+    }
+
+    @Test
     void createToken_invalidGrantType_returnsNull() {
 
         String payload = Base64.getEncoder()
@@ -118,7 +156,7 @@ class PdndMockServiceImplTest {
     }
 
     @Test
-    void createToken_missingClaims_returnsNull() throws Exception {
+    void createToken_missingClaims_returnsNull() {
 
         String payload = Base64.getEncoder()
                 .encodeToString("{}".getBytes(StandardCharsets.UTF_8));

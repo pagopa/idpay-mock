@@ -139,7 +139,7 @@ public class PdndMockServiceImpl implements PdndMockService {
     private static byte[] decodeJwtPart(String jwtPart) {
         try {
             return Base64.getUrlDecoder().decode(jwtPart);
-        } catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException _) {
             return Base64.getDecoder().decode(jwtPart);
         }
     }

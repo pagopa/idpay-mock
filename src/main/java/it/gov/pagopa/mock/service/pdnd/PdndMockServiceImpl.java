@@ -175,7 +175,7 @@ public class PdndMockServiceImpl implements PdndMockService {
                     <info-attivita>
                         <classificazioni-ateco>
                             <classificazione-ateco\s
-                                c-attivita="47.11.10"
+                                c-attivita="11.11.11"
                                 attivita="Commercio al dettaglio"
                                 c-importanza="1"/>
                             <classificazione-ateco\s

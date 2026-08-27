@@ -1,7 +1,13 @@
 package it.gov.pagopa.mock.service.pdnd;
 
+import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
+import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
+import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -168,23 +175,24 @@ public class PdndMockServiceImpl implements PdndMockService {
     }
 
     private String buildFakeVisuraXml(String taxCode) {
-        return """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <VisuraImpresa>
-                    <codice-fiscale>%s</codice-fiscale>
-                    <info-attivita>
-                        <classificazioni-ateco>
-                            <classificazione-ateco\s
-                                c-attivita="47.11.10"
-                                attivita="Commercio al dettaglio"
-                                c-importanza="1"/>
-                            <classificazione-ateco\s
-                                c-attivita="56.10.11"
-                                attivita="Ristorazione"
-                                c-importanza="2"/>
-                        </classificazioni-ateco>
-                    </info-attivita>
-                </VisuraImpresa>
-                """.formatted(StringUtils.defaultString(taxCode));
+
+        VisuraImpresa visuraImpresa = new VisuraImpresa(
+            taxCode,
+            new InfoAttivita(List.of(
+                    new ClassificazioneAteco("47.11.10", "Commercio al dettaglio", "1"),
+                    new ClassificazioneAteco("56.10.11", "Ristorazione", "2")
+            ))
+        );
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(VisuraImpresa.class);
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            StringWriter writer = new StringWriter();
+            marshaller.marshal(visuraImpresa, writer);
+            return writer.toString();
+        } catch (JAXBException e) {
+            throw new IllegalStateException("Cannot create mocked PDND institution detail", e);
+        }
     }
 }

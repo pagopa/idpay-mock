@@ -4,6 +4,7 @@ import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.api.TokenOauth2Api;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockService;
+import it.gov.pagopa.mock.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -42,11 +43,11 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
         if (token != null) {
             log.info(
                     "[MOCK_PDND] Returning fake accessToken for clientId {}",
-                    sanitizeForLog(clientId));
+                    Utilities.sanitizeForLog(clientId));
             return ResponseEntity.ok(token);
         }
 
-        log.warn("[MOCK_PDND] Token creation rejected for clientId {}", sanitizeForLog(clientId));
+        log.warn("[MOCK_PDND] Token creation rejected for clientId {}", Utilities.sanitizeForLog(clientId));
         return ResponseEntity.badRequest().build();
     }
 
@@ -59,13 +60,13 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
         String normalizedTaxId = normalize(codiceFiscale);
 
         if (!isValidTaxId(normalizedTaxId)) {
-            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", sanitizeForLog(normalizedTaxId));
+            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", Utilities.sanitizeForLog(normalizedTaxId));
             return ResponseEntity.badRequest().build();
         }
 
         log.info(
                 "[MOCK_PDND] Returning fake visura for codiceFiscale {} (auth header present: {})",
-                sanitizeForLog(normalizedTaxId),
+                Utilities.sanitizeForLog(normalizedTaxId),
                 authorization != null && !authorization.isBlank());
 
         VisuraImpresa rawInstitutionDetail = pdndMockService.getRawInstitutionDetail(normalizedTaxId);
@@ -81,13 +82,13 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
 
         String normalizedTaxId = normalize(visuraImpresa != null ? visuraImpresa.getCodiceFiscale() : null);
         if (!isValidTaxId(normalizedTaxId)) {
-            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", sanitizeForLog(normalizedTaxId));
+            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", Utilities.sanitizeForLog(normalizedTaxId));
             return ResponseEntity.badRequest().build();
         }
 
         pdndMockService.saveVisuraImpresa(visuraImpresa);
 
-        log.info("[MOCK_PDND] Saved mocked visura for codiceFiscale {}", sanitizeForLog(normalizedTaxId));
+        log.info("[MOCK_PDND] Saved mocked visura for codiceFiscale {}", Utilities.sanitizeForLog(normalizedTaxId));
 
         return ResponseEntity.ok().build();
     }
@@ -98,24 +99,5 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
 
     private boolean isValidTaxId(String taxId) {
         return taxId != null && TAX_ID_PATTERN.matcher(taxId).matches();
-    }
-
-    private String sanitizeForLog(String value) {
-        if (value == null) {
-            return "<null>";
-        }
-
-        String sanitized = value
-                .replace('\n', '_')
-                .replace('\r', '_')
-                .replace('\t', '_')
-                .replace('\f', '_')
-                .replace('\u0000', '_');
-
-        if (sanitized.length() > 256) {
-            sanitized = sanitized.substring(0, 256) + "...";
-        }
-
-        return sanitized;
     }
 }

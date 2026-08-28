@@ -86,4 +86,23 @@ public final class Utilities {
         int monthIndex = FISCAL_CODE_MONTH_LETTERS.indexOf(Character.toUpperCase(monthCode));
         return monthIndex + 1; // Adding 1 to match the 1-based month indexing in LocalDate
     }
+
+    public static String sanitizeForLog(String value) {
+        if (value == null) {
+            return "<null>";
+        }
+    
+        String sanitized = value
+                .replace('\n', '_')
+                .replace('\r', '_')
+                .replace('\t', '_')
+                .replace('\f', '_')
+                .replace('\u0000', '_');
+    
+        if (sanitized.length() > 256) {
+            sanitized = sanitized.substring(0, 256) + "...";
+        }
+    
+        return sanitized;
+    }
 }

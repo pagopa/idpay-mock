@@ -26,6 +26,7 @@ import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
 import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
+import it.gov.pagopa.mock.utils.Utilities;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
@@ -206,7 +207,8 @@ public class PdndMockServiceImpl implements PdndMockService {
                 .classificazioniAteco(toMockedClassificazioniAteco(visuraImpresa.getInfoAttivita()))
                 .build();
 
-        log.info("[PDND_MOCK] Saving mocked VisuraImpresa for taxCode {}", toSave.getTaxCode());
+        log.info("[PDND_MOCK] Saving mocked VisuraImpresa for taxCode {}", 
+                    Utilities.sanitizeForLog(toSave.getTaxCode()));
         mongoTemplate.save(toSave);
     }
 

@@ -175,15 +175,16 @@ public class PdndMockServiceImpl implements PdndMockService {
     }
 
     private String buildFakeVisuraXml(String taxCode) {
-
-        VisuraImpresa visuraImpresa = new VisuraImpresa(
+        return visuraImpresaToXml(new VisuraImpresa(
             taxCode,
             new InfoAttivita(List.of(
                     new ClassificazioneAteco("47.11.10", "Commercio al dettaglio", "1"),
                     new ClassificazioneAteco("56.10.11", "Ristorazione", "2")
             ))
-        );
+        ));
+    }
 
+    private String visuraImpresaToXml(VisuraImpresa visuraImpresa) {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(VisuraImpresa.class);
             Marshaller marshaller = jaxbContext.createMarshaller();

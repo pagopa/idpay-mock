@@ -25,13 +25,17 @@ class PdndMockServiceImplTest {
     @Mock
     private tools.jackson.databind.ObjectMapper objectMapper;
 
+    @Mock
+    private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
+
     private PdndMockServiceImpl pdndMockService;
 
     @BeforeEach
     void setUp() {
         pdndMockService = new PdndMockServiceImpl(
                 "expectedAudience",
-                objectMapper
+                objectMapper,
+                mongoTemplate
         );
     }
 

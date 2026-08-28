@@ -1,5 +1,7 @@
 package it.gov.pagopa.mock.controller;
 
+import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.api.TokenOauth2Api;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockService;
@@ -73,6 +75,25 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .body(xml);
+    }
+
+    @PostMapping(
+            value = "/visura-impresa",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> saveVisuraImpresa(@RequestBody VisuraImpresa visuraImpresa) {
+
+        String normalizedTaxId = normalize(visuraImpresa != null ? visuraImpresa.getCodiceFiscale() : null);
+        if (!isValidTaxId(normalizedTaxId)) {
+            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", sanitizeForLog(normalizedTaxId));
+            return ResponseEntity.badRequest().build();
+        }
+
+        pdndMockService.saveVisuraImpresa(visuraImpresa);
+
+        log.info("[MOCK_PDND] Saved mocked visura for codiceFiscale {}", sanitizeForLog(normalizedTaxId));
+
+        return ResponseEntity.ok().build();
     }
 
     private String normalize(String value) {

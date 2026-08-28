@@ -3,6 +3,8 @@ package it.gov.pagopa.mock.service.pdnd;
 import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
 import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
 import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
+import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
 import jakarta.xml.bind.JAXBContext;
@@ -12,6 +14,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import tools.jackson.databind.ObjectMapper;
@@ -33,12 +36,15 @@ public class PdndMockServiceImpl implements PdndMockService {
 
     private final ObjectMapper objectMapper;
     private final String expectedAudience;
+    private final MongoTemplate mongoTemplate;
 
     public PdndMockServiceImpl(
             @Value("${mocks.pdnd.expected.audience}") String expectedAudience,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            MongoTemplate mongoTemplate) {
         this.objectMapper = objectMapper;
         this.expectedAudience = expectedAudience;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -172,6 +178,35 @@ public class PdndMockServiceImpl implements PdndMockService {
     public byte[] getRawInstitutionDetail(String taxCode) {
         String xml = buildFakeVisuraXml(taxCode);
         return xml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public void saveVisuraImpresa(VisuraImpresa visuraImpresa) {
+        if (visuraImpresa == null || StringUtils.isBlank(visuraImpresa.getCodiceFiscale())) {
+            throw new IllegalArgumentException("[PDND_MOCK] codice-fiscale is mandatory to save a VisuraImpresa");
+        }
+
+        MockedVisuraImpresa toSave = MockedVisuraImpresa.builder()
+                .taxCode(visuraImpresa.getCodiceFiscale())
+                .classificazioniAteco(toMockedClassificazioniAteco(visuraImpresa.getInfoAttivita()))
+                .build();
+
+        log.info("[PDND_MOCK] Saving mocked VisuraImpresa for taxCode {}", toSave.getTaxCode());
+        mongoTemplate.save(toSave);
+    }
+
+    private List<MockedClassificazioneAteco> toMockedClassificazioniAteco(InfoAttivita infoAttivita) {
+        if (infoAttivita == null || CollectionUtils.isEmpty(infoAttivita.getClassificazioniAteco())) {
+            return Collections.emptyList();
+        }
+        return infoAttivita.getClassificazioniAteco().stream()
+                .filter(Objects::nonNull)
+                .map(c -> MockedClassificazioneAteco.builder()
+                        .codiceAttivita(c.getCodiceAttivita())
+                        .descrizioneAttivita(c.getAttivita())
+                        .codiceImportanza(c.getCodiceImportanza())
+                        .build())
+                .toList();
     }
 
     private String buildFakeVisuraXml(String taxCode) {

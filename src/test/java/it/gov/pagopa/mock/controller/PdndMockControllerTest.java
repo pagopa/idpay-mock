@@ -29,6 +29,9 @@ class PdndMockControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
+
     private static final String CLIENT_ASSERTION = "eyJraWQiOiJyM2VlOHdaMzlmeHE3MUxpbmJZRGdwb0hleXdidXpMeWM0eW5WbGRFQUtZIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJDTElFTlRJRCIsImF1ZCI6ImF1dGgudWF0LmludGVyb3AucGFnb3BhLml0L2NsaWVudC1hc3NlcnRpb24iLCJkaWdlc3QiOnsidmFsdWUiOiJGQjA4NUZDQkZGODIwNkMyMTRDQjNCNDIzQjVCQkQ3RDIxNDYwNzgxOUY3Mjk5RjA3NjJFRTcyOTAyMzlENzUzIiwiYWxnIjoiU0hBMjU2In0sImlzcyI6IkNMSUVOVElEIiwicHVycG9zZUlkIjoiUFVSUE9TRUlEIiwiZXhwIjoxNjk2MDEwMzQ1LCJpYXQiOjE2OTYwMDk5MjUsImp0aSI6IjVmNGEwOTNjLWQwYmMtNDAzMi05MWRjLTI1ZWM5MTRkOGU0YSJ9.bah-zp6lbBf8F9vEaGjyv7gE-DfF8iOnTlBde-NBZlIU3adrs5Nvvgccqc_DCzd5jsEHMOg2Z1dWjGdVcBOWUFDlQFuVRVUNJaxiYpisUPJmTxezV9sOCxGlIebrQJunC2u9wH8PYxqH_xQelvecoxIT9QX7naI6JtnX6uKUUzKNET4JiUB3NkKZtuL37ff7PBh6g-iuTWQO6MWijXB9SKCCrhWUuV64FKhE4_mgTfRdlI0zGcAjq71oplQ6OdoHq-KN4HeTF3Z-w0t2QLEHhAHzkYuhCG0UnfgNnJe4IsnEDomX1mZI5vroP7MFzlW7Q6yTq8ToVjqKt21u9fE-yg";
     private static final String CLIENT_ASSERTION_VISURA_STYLE = buildJwtLikeToken(
             """
@@ -148,4 +151,5 @@ class PdndMockControllerTest {
                 .withoutPadding()
                 .encodeToString(value.getBytes(StandardCharsets.UTF_8));
     }
+    
 }

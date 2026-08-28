@@ -1,7 +1,6 @@
 package it.gov.pagopa.mock.controller;
 
 import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
-import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.api.TokenOauth2Api;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockService;

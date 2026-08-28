@@ -26,6 +26,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
 import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
 import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.mapper.MockedVisuraImpresaMapperImpl;
 import it.gov.pagopa.mock.mapper.VisuraImpresaMapperImpl;
 import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
 import it.gov.pagopa.mock.model.MockedVisuraImpresa;
@@ -50,7 +51,8 @@ class PdndMockServiceImplTest {
                 "expectedAudience",
                 objectMapper,
                 mongoTemplate,
-                new VisuraImpresaMapperImpl()
+                new VisuraImpresaMapperImpl(),
+                new MockedVisuraImpresaMapperImpl()
         );
     }
 

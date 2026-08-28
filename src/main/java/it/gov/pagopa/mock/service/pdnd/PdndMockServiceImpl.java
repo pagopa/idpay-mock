@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +21,8 @@ import org.springframework.util.CollectionUtils;
 import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
 import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
 import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.mapper.MockedVisuraImpresaMapper;
 import it.gov.pagopa.mock.mapper.VisuraImpresaMapper;
-import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
 import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
@@ -46,16 +45,19 @@ public class PdndMockServiceImpl implements PdndMockService {
     private final String expectedAudience;
     private final MongoTemplate mongoTemplate;
     private final VisuraImpresaMapper visuraImpresaMapper;
+    private final MockedVisuraImpresaMapper mockedVisuraImpresaMapper;
 
     public PdndMockServiceImpl(
             @Value("${mocks.pdnd.expected.audience}") String expectedAudience,
             ObjectMapper objectMapper,
             MongoTemplate mongoTemplate,
-            VisuraImpresaMapper visuraImpresaMapper) {
+            VisuraImpresaMapper visuraImpresaMapper,
+            MockedVisuraImpresaMapper mockedVisuraImpresaMapper) {
         this.objectMapper = objectMapper;
         this.expectedAudience = expectedAudience;
         this.mongoTemplate = mongoTemplate;
         this.visuraImpresaMapper = visuraImpresaMapper;
+        this.mockedVisuraImpresaMapper = mockedVisuraImpresaMapper;
     }
 
     @Override
@@ -208,28 +210,11 @@ public class PdndMockServiceImpl implements PdndMockService {
             throw new IllegalArgumentException("[PDND_MOCK] codice-fiscale is mandatory to save a VisuraImpresa");
         }
 
-        MockedVisuraImpresa toSave = MockedVisuraImpresa.builder()
-                .taxCode(visuraImpresa.getCodiceFiscale())
-                .classificazioniAteco(toMockedClassificazioniAteco(visuraImpresa.getInfoAttivita()))
-                .build();
+        MockedVisuraImpresa toSave = mockedVisuraImpresaMapper.mapVisuraImpresa(visuraImpresa);
 
         log.info("[PDND_MOCK] Saving mocked VisuraImpresa for taxCode {}", 
                     Utilities.sanitizeForLog(toSave.getTaxCode()));
         mongoTemplate.save(toSave);
-    }
-
-    private List<MockedClassificazioneAteco> toMockedClassificazioniAteco(InfoAttivita infoAttivita) {
-        if (infoAttivita == null || CollectionUtils.isEmpty(infoAttivita.getClassificazioniAteco())) {
-            return Collections.emptyList();
-        }
-        return infoAttivita.getClassificazioniAteco().stream()
-                .filter(Objects::nonNull)
-                .map(c -> MockedClassificazioneAteco.builder()
-                        .codiceAttivita(c.getCodiceAttivita())
-                        .descrizioneAttivita(c.getAttivita())
-                        .codiceImportanza(c.getCodiceImportanza())
-                        .build())
-                .toList();
     }
 
     private VisuraImpresa makeDefaultVisura(String taxCode) {

@@ -1,9 +1,11 @@
 package it.gov.pagopa.mock.controller;
 
 import it.gov.pagopa.common.config.JsonConfig;
+import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.service.pdnd.PdndMockServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -17,6 +19,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -28,9 +33,6 @@ class PdndMockControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
-    private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
 
     private static final String CLIENT_ASSERTION = "eyJraWQiOiJyM2VlOHdaMzlmeHE3MUxpbmJZRGdwb0hleXdidXpMeWM0eW5WbGRFQUtZIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJDTElFTlRJRCIsImF1ZCI6ImF1dGgudWF0LmludGVyb3AucGFnb3BhLml0L2NsaWVudC1hc3NlcnRpb24iLCJkaWdlc3QiOnsidmFsdWUiOiJGQjA4NUZDQkZGODIwNkMyMTRDQjNCNDIzQjVCQkQ3RDIxNDYwNzgxOUY3Mjk5RjA3NjJFRTcyOTAyMzlENzUzIiwiYWxnIjoiU0hBMjU2In0sImlzcyI6IkNMSUVOVElEIiwicHVycG9zZUlkIjoiUFVSUE9TRUlEIiwiZXhwIjoxNjk2MDEwMzQ1LCJpYXQiOjE2OTYwMDk5MjUsImp0aSI6IjVmNGEwOTNjLWQwYmMtNDAzMi05MWRjLTI1ZWM5MTRkOGU0YSJ9.bah-zp6lbBf8F9vEaGjyv7gE-DfF8iOnTlBde-NBZlIU3adrs5Nvvgccqc_DCzd5jsEHMOg2Z1dWjGdVcBOWUFDlQFuVRVUNJaxiYpisUPJmTxezV9sOCxGlIebrQJunC2u9wH8PYxqH_xQelvecoxIT9QX7naI6JtnX6uKUUzKNET4JiUB3NkKZtuL37ff7PBh6g-iuTWQO6MWijXB9SKCCrhWUuV64FKhE4_mgTfRdlI0zGcAjq71oplQ6OdoHq-KN4HeTF3Z-w0t2QLEHhAHzkYuhCG0UnfgNnJe4IsnEDomX1mZI5vroP7MFzlW7Q6yTq8ToVjqKt21u9fE-yg";
     private static final String CLIENT_ASSERTION_VISURA_STYLE = buildJwtLikeToken(
@@ -138,6 +140,56 @@ class PdndMockControllerTest {
                         get("/idpay/mock/pdnd/dettaglio/codicefiscale")
                                 .header(HttpHeaders.AUTHORIZATION, "Bearer validToken")
                                 .accept(MediaType.APPLICATION_XML)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void saveVisuraImpresa_ok() throws Exception {
+        String requestBody = """
+                {
+                  "codiceFiscale": "ABCDEF12G34H567I",
+                  "infoAttivita": {
+                    "classificazioniAteco": [
+                      {
+                        "codiceAttivita": "47.11.10",
+                        "attivita": "Commercio al dettaglio",
+                        "codiceImportanza": "1"
+                      }
+                    ]
+                  }
+                }
+                """;
+
+        mockMvc.perform(
+                        post("/idpay/mock/pdnd/visura-impresa")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void saveVisuraImpresa_invalidTaxId_returnsBadRequest() throws Exception {
+        String requestBody = """
+                {
+                  "codiceFiscale": "INVALID_CF",
+                  "infoAttivita": {
+                    "classificazioniAteco": [
+                      {
+                        "codiceAttivita": "47.11.10",
+                        "attivita": "Commercio al dettaglio",
+                        "codiceImportanza": "1"
+                      }
+                    ]
+                  }
+                }
+                """;
+
+        mockMvc.perform(
+                        post("/idpay/mock/pdnd/visura-impresa")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestBody)
                 )
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }

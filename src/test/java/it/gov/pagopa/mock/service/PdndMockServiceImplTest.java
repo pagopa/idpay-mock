@@ -1,11 +1,17 @@
 package it.gov.pagopa.mock.service;
 
+import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
+import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
+import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
+import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -17,6 +23,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -210,4 +217,40 @@ class PdndMockServiceImplTest {
         assertTrue(xml.contains("<VisuraImpresa>"));
         assertTrue(xml.contains("classificazione-ateco"));
     }
+
+    @Test
+    void saveVisuraImpresa_persistsMappedFields() {
+        String taxCode = "ABCDEF12G34H567I";
+        VisuraImpresa input = new VisuraImpresa(
+                taxCode,
+                new InfoAttivita(List.of(
+                        new ClassificazioneAteco("47.11.10", "Commercio al dettaglio", "1"),
+                        new ClassificazioneAteco("56.10.11", "Ristorazione", "2")
+                ))
+        );
+
+        when(mongoTemplate.save(any(MockedVisuraImpresa.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        pdndMockService.saveVisuraImpresa(input);
+
+        ArgumentCaptor<MockedVisuraImpresa> captor = ArgumentCaptor.forClass(MockedVisuraImpresa.class);
+        verify(mongoTemplate).save(captor.capture());
+
+        MockedVisuraImpresa saved = captor.getValue();
+        assertNotNull(saved);
+        assertEquals(taxCode, saved.getTaxCode());
+        assertEquals(2, saved.getClassificazioniAteco().size());
+
+        MockedClassificazioneAteco first = saved.getClassificazioniAteco().get(0);
+        assertEquals("47.11.10", first.getCodiceAttivita());
+        assertEquals("Commercio al dettaglio", first.getDescrizioneAttivita());
+        assertEquals("1", first.getCodiceImportanza());
+
+        MockedClassificazioneAteco second = saved.getClassificazioniAteco().get(1);
+        assertEquals("56.10.11", second.getCodiceAttivita());
+        assertEquals("Ristorazione", second.getDescrizioneAttivita());
+        assertEquals("2", second.getCodiceImportanza());
+    }
+
 }

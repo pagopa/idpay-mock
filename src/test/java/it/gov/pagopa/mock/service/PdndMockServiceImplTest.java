@@ -195,7 +195,7 @@ class PdndMockServiceImplTest {
     }
 
     @Test
-    void getRawInstitutionDetail_validTaxCode_returnsXml() {
+    void getRawInstitutionDetail_validTaxCode_returnsVisuraImpresa() {
         VisuraImpresa result = pdndMockService.getRawInstitutionDetail("12345678901");
 
         assertNotNull(result);

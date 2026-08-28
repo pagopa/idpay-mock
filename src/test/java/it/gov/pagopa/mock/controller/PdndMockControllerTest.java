@@ -119,10 +119,10 @@ class PdndMockControllerTest {
 
     private void mockTokenResponse(String clientAssertion, String accessToken) {
       when(pdndMockService.createToken(
-          eq(clientAssertion),
-          eq(PdndMockServiceImpl.EXPECTED_CLIENT_ASSERTION_TYPE),
-          eq(PdndMockServiceImpl.EXPECTED_GRANT_TYPE),
-          eq("CLIENTID")))
+            clientAssertion,
+            PdndMockServiceImpl.EXPECTED_CLIENT_ASSERTION_TYPE,
+            PdndMockServiceImpl.EXPECTED_GRANT_TYPE,
+            "CLIENTID"))
           .thenReturn(new ClientCredentialsResponseDTO(accessToken, TokenTypeDTO.BEARER, 600));
     }
 
@@ -135,7 +135,7 @@ class PdndMockControllerTest {
           new ClassificazioneAteco("47.11.10", "Commercio al dettaglio", "1")
         ))
       );
-      org.mockito.Mockito.when(pdndMockService.getRawInstitutionDetail("ABCDEF12G34H567I"))
+      when(pdndMockService.getRawInstitutionDetail("ABCDEF12G34H567I"))
         .thenReturn(visuraImpresa);
 
         MvcResult result = mockMvc.perform(

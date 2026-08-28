@@ -51,10 +51,9 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
         return ResponseEntity.badRequest().build();
     }
 
-    @GetMapping(
-            value = "/dettaglio/codicefiscale",
-            produces = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<byte[]> getRawInstitutionDetail(
+    @GetMapping(value = "/dettaglio/codicefiscale",
+                produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<VisuraImpresa> getRawInstitutionDetail(
             @RequestParam("codiceFiscale") String codiceFiscale,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
 
@@ -70,11 +69,9 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
                 sanitizeForLog(normalizedTaxId),
                 authorization != null && !authorization.isBlank());
 
-        byte[] xml = pdndMockService.getRawInstitutionDetail(normalizedTaxId);
+        VisuraImpresa rawInstitutionDetail = pdndMockService.getRawInstitutionDetail(normalizedTaxId);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_XML)
-                .body(xml);
+        return ResponseEntity.ok(rawInstitutionDetail);
     }
 
     @PostMapping(

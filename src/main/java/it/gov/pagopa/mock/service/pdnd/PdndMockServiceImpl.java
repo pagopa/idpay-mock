@@ -1,5 +1,24 @@
 package it.gov.pagopa.mock.service.pdnd;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
 import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
 import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
@@ -7,22 +26,9 @@ import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
 import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import tools.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -175,9 +181,18 @@ public class PdndMockServiceImpl implements PdndMockService {
         );
     }
 
-    public byte[] getRawInstitutionDetail(String taxCode) {
-        String xml = buildFakeVisuraXml(taxCode);
-        return xml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    @Override
+    public VisuraImpresa getRawInstitutionDetail(String taxCode) {
+        MockedVisuraImpresa visura = mongoTemplate.findOne(
+                Query.query(Criteria.where("taxCode").is(taxCode)),
+                MockedVisuraImpresa.class
+        );
+
+        if (visura == null || CollectionUtils.isEmpty(visura.getClassificazioniAteco())) {
+            return makeDefaultVisura(taxCode);
+        }
+
+        return mapMockedVisuraImpresa(taxCode, visura);
     }
 
     @Override
@@ -209,26 +224,35 @@ public class PdndMockServiceImpl implements PdndMockService {
                 .toList();
     }
 
-    private String buildFakeVisuraXml(String taxCode) {
-        return visuraImpresaToXml(new VisuraImpresa(
-            taxCode,
-            new InfoAttivita(List.of(
-                    new ClassificazioneAteco("47.11.10", "Commercio al dettaglio", "1"),
-                    new ClassificazioneAteco("56.10.11", "Ristorazione", "2")
-            ))
-        ));
+    private VisuraImpresa mapMockedVisuraImpresa(String taxCode, MockedVisuraImpresa visura) {
+        return new VisuraImpresa(
+                taxCode,
+                new InfoAttivita(visura.getClassificazioniAteco().stream()
+                        .map(c -> ClassificazioneAteco.builder()
+                                .codiceAttivita(c.getCodiceAttivita())
+                                .attivita(c.getDescrizioneAttivita())
+                                .codiceImportanza(c.getCodiceImportanza())
+                                .build())
+                        .toList())
+        );
     }
 
-    private String visuraImpresaToXml(VisuraImpresa visuraImpresa) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(VisuraImpresa.class);
-            Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            StringWriter writer = new StringWriter();
-            marshaller.marshal(visuraImpresa, writer);
-            return writer.toString();
-        } catch (JAXBException e) {
-            throw new IllegalStateException("Cannot create mocked PDND institution detail", e);
-        }
+    private VisuraImpresa makeDefaultVisura(String taxCode) {
+        return new VisuraImpresa(
+                taxCode,
+                new InfoAttivita(List.of(
+                        ClassificazioneAteco.builder()
+                                .codiceAttivita("47.11.10")
+                                .attivita("Commercio al dettaglio")
+                                .codiceImportanza("1")
+                                .build(),
+                        ClassificazioneAteco.builder()
+                                .codiceAttivita("56.10.11")
+                                .attivita("Ristorazione")
+                                .codiceImportanza("2")
+                                .build()
+                ))
+        );
     }
+
 }

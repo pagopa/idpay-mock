@@ -85,6 +85,7 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
             return ResponseEntity.badRequest().build();
         }
 
+        visuraImpresa.setCodiceFiscale(normalizedTaxId);
         pdndMockService.saveVisuraImpresa(visuraImpresa);
 
         log.info("[MOCK_PDND] Saved mocked visura for codiceFiscale {}", Utilities.sanitizeForLog(normalizedTaxId));

@@ -189,10 +189,12 @@ public class PdndMockServiceImpl implements PdndMockService {
                 MockedVisuraImpresa.class
         );
 
-        if (visura == null || CollectionUtils.isEmpty(visura.getClassificazioniAteco())) {
+        if (visura == null) {
             return makeDefaultVisura(taxCode);
         }
-
+        if (visura.getClassificazioniAteco() == null) {
+            visura.setClassificazioniAteco(Collections.emptyList());
+        }
         return mapMockedVisuraImpresa(taxCode, visura);
     }
 

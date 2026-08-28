@@ -22,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
 import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
 import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.mapper.VisuraImpresaMapper;
 import it.gov.pagopa.mock.model.MockedClassificazioneAteco;
 import it.gov.pagopa.mock.model.MockedVisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
@@ -44,14 +45,17 @@ public class PdndMockServiceImpl implements PdndMockService {
     private final ObjectMapper objectMapper;
     private final String expectedAudience;
     private final MongoTemplate mongoTemplate;
+    private final VisuraImpresaMapper visuraImpresaMapper;
 
     public PdndMockServiceImpl(
             @Value("${mocks.pdnd.expected.audience}") String expectedAudience,
             ObjectMapper objectMapper,
-            MongoTemplate mongoTemplate) {
+            MongoTemplate mongoTemplate,
+            VisuraImpresaMapper visuraImpresaMapper) {
         this.objectMapper = objectMapper;
         this.expectedAudience = expectedAudience;
         this.mongoTemplate = mongoTemplate;
+        this.visuraImpresaMapper = visuraImpresaMapper;
     }
 
     @Override
@@ -195,7 +199,7 @@ public class PdndMockServiceImpl implements PdndMockService {
         if (visura.getClassificazioniAteco() == null) {
             visura.setClassificazioniAteco(Collections.emptyList());
         }
-        return mapMockedVisuraImpresa(taxCode, visura);
+        return visuraImpresaMapper.mapMockedVisuraImpresa(visura);
     }
 
     @Override
@@ -226,19 +230,6 @@ public class PdndMockServiceImpl implements PdndMockService {
                         .codiceImportanza(c.getCodiceImportanza())
                         .build())
                 .toList();
-    }
-
-    private VisuraImpresa mapMockedVisuraImpresa(String taxCode, MockedVisuraImpresa visura) {
-        return new VisuraImpresa(
-                taxCode,
-                new InfoAttivita(visura.getClassificazioniAteco().stream()
-                        .map(c -> ClassificazioneAteco.builder()
-                                .codiceAttivita(c.getCodiceAttivita())
-                                .attivita(c.getDescrizioneAttivita())
-                                .codiceImportanza(c.getCodiceImportanza())
-                                .build())
-                        .toList())
-        );
     }
 
     private VisuraImpresa makeDefaultVisura(String taxCode) {

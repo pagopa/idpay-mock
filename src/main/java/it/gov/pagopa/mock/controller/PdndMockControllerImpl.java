@@ -76,8 +76,7 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
 
     @PostMapping(
             value = "/visura-impresa",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> saveVisuraImpresa(@RequestBody VisuraImpresa visuraImpresa) {
 
         String normalizedTaxId = normalize(visuraImpresa != null ? visuraImpresa.getCodiceFiscale() : null);

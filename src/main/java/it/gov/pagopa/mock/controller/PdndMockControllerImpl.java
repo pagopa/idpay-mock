@@ -1,8 +1,10 @@
 package it.gov.pagopa.mock.controller;
 
+import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
 import it.gov.pagopa.mock.openapi.pdnd.api.TokenOauth2Api;
 import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
 import it.gov.pagopa.mock.service.pdnd.PdndMockService;
+import it.gov.pagopa.mock.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -41,38 +43,54 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
         if (token != null) {
             log.info(
                     "[MOCK_PDND] Returning fake accessToken for clientId {}",
-                    sanitizeForLog(clientId));
+                    Utilities.sanitizeForLog(clientId));
             return ResponseEntity.ok(token);
         }
 
-        log.warn("[MOCK_PDND] Token creation rejected for clientId {}", sanitizeForLog(clientId));
+        log.warn("[MOCK_PDND] Token creation rejected for clientId {}", Utilities.sanitizeForLog(clientId));
         return ResponseEntity.badRequest().build();
     }
 
-    @GetMapping(
-            value = "/dettaglio/codicefiscale",
-            produces = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<byte[]> getRawInstitutionDetail(
+    @GetMapping(value = "/dettaglio/codicefiscale",
+                produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<VisuraImpresa> getRawInstitutionDetail(
             @RequestParam("codiceFiscale") String codiceFiscale,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
 
         String normalizedTaxId = normalize(codiceFiscale);
 
         if (!isValidTaxId(normalizedTaxId)) {
-            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", sanitizeForLog(normalizedTaxId));
+            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", Utilities.sanitizeForLog(normalizedTaxId));
             return ResponseEntity.badRequest().build();
         }
 
         log.info(
                 "[MOCK_PDND] Returning fake visura for codiceFiscale {} (auth header present: {})",
-                sanitizeForLog(normalizedTaxId),
+                Utilities.sanitizeForLog(normalizedTaxId),
                 authorization != null && !authorization.isBlank());
 
-        byte[] xml = pdndMockService.getRawInstitutionDetail(normalizedTaxId);
+        VisuraImpresa rawInstitutionDetail = pdndMockService.getRawInstitutionDetail(normalizedTaxId);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_XML)
-                .body(xml);
+        return ResponseEntity.ok(rawInstitutionDetail);
+    }
+
+    @PostMapping(
+            value = "/visura-impresa",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> saveVisuraImpresa(@RequestBody VisuraImpresa visuraImpresa) {
+
+        String normalizedTaxId = normalize(visuraImpresa != null ? visuraImpresa.getCodiceFiscale() : null);
+        if (!isValidTaxId(normalizedTaxId)) {
+            log.warn("[MOCK_PDND] Invalid codiceFiscale format: {}", Utilities.sanitizeForLog(normalizedTaxId));
+            return ResponseEntity.badRequest().build();
+        }
+
+        visuraImpresa.setCodiceFiscale(normalizedTaxId);
+        pdndMockService.saveVisuraImpresa(visuraImpresa);
+
+        log.info("[MOCK_PDND] Saved mocked visura for codiceFiscale {}", Utilities.sanitizeForLog(normalizedTaxId));
+
+        return ResponseEntity.ok().build();
     }
 
     private String normalize(String value) {
@@ -81,24 +99,5 @@ public class PdndMockControllerImpl implements TokenOauth2Api {
 
     private boolean isValidTaxId(String taxId) {
         return taxId != null && TAX_ID_PATTERN.matcher(taxId).matches();
-    }
-
-    private String sanitizeForLog(String value) {
-        if (value == null) {
-            return "<null>";
-        }
-
-        String sanitized = value
-                .replace('\n', '_')
-                .replace('\r', '_')
-                .replace('\t', '_')
-                .replace('\f', '_')
-                .replace('\u0000', '_');
-
-        if (sanitized.length() > 256) {
-            sanitized = sanitized.substring(0, 256) + "...";
-        }
-
-        return sanitized;
     }
 }

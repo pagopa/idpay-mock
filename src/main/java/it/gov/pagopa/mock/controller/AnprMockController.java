@@ -1,6 +1,5 @@
 package it.gov.pagopa.mock.controller;
 
-import it.gov.pagopa.mock.dto.anpr.AnprKoResponseDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprRequestDTO;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseBase;
 import it.gov.pagopa.mock.dto.anpr.AnprResponseDTO;

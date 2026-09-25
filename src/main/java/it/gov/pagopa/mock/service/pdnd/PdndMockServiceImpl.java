@@ -1,19 +1,35 @@
 package it.gov.pagopa.mock.service.pdnd;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
-import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import it.gov.pagopa.mock.dto.visuraimpresa.ClassificazioneAteco;
+import it.gov.pagopa.mock.dto.visuraimpresa.InfoAttivita;
+import it.gov.pagopa.mock.dto.visuraimpresa.VisuraImpresa;
+import it.gov.pagopa.mock.mapper.MockedVisuraImpresaMapper;
+import it.gov.pagopa.mock.mapper.VisuraImpresaMapper;
+import it.gov.pagopa.mock.model.MockedVisuraImpresa;
+import it.gov.pagopa.mock.openapi.pdnd.dto.ClientCredentialsResponseDTO;
+import it.gov.pagopa.mock.openapi.pdnd.dto.TokenTypeDTO;
+import it.gov.pagopa.mock.utils.Utilities;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -27,12 +43,21 @@ public class PdndMockServiceImpl implements PdndMockService {
 
     private final ObjectMapper objectMapper;
     private final String expectedAudience;
+    private final MongoTemplate mongoTemplate;
+    private final VisuraImpresaMapper visuraImpresaMapper;
+    private final MockedVisuraImpresaMapper mockedVisuraImpresaMapper;
 
     public PdndMockServiceImpl(
             @Value("${mocks.pdnd.expected.audience}") String expectedAudience,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            MongoTemplate mongoTemplate,
+            VisuraImpresaMapper visuraImpresaMapper,
+            MockedVisuraImpresaMapper mockedVisuraImpresaMapper) {
         this.objectMapper = objectMapper;
         this.expectedAudience = expectedAudience;
+        this.mongoTemplate = mongoTemplate;
+        this.visuraImpresaMapper = visuraImpresaMapper;
+        this.mockedVisuraImpresaMapper = mockedVisuraImpresaMapper;
     }
 
     @Override
@@ -76,26 +101,28 @@ public class PdndMockServiceImpl implements PdndMockService {
     }
 
     private Map<String, String> validateClaims(String clientId, String[] clientAssertionSplits) throws IOException {
-        @SuppressWarnings("unchecked") Map<String, Object> clientAssertionClaims = objectMapper.readValue(Base64.getDecoder().decode(clientAssertionSplits[1]), Map.class);
+        @SuppressWarnings("unchecked") Map<String, Object> clientAssertionClaims = objectMapper.readValue(decodeJwtPart(clientAssertionSplits[1]), Map.class);
 
         validateExpectedClaim(clientAssertionClaims, "iss", clientId);
         validateExpectedClaim(clientAssertionClaims, "sub", clientId);
-        validateExpectedClaim(clientAssertionClaims, "aud", expectedAudience);
+        validateExpectedAudience(clientAssertionClaims.get("aud"));
 
-        @SuppressWarnings("unchecked") Map<String, String> signedDigest = (Map<String, String>) readMandatoryClaim(clientAssertionClaims, "digest");
+        @SuppressWarnings("unchecked") Map<String, String> signedDigest = (Map<String, String>) clientAssertionClaims.get("digest");
         String signedPurposeId = (String) readMandatoryClaim(clientAssertionClaims, "purposeId");
-        Integer exp = (Integer) readMandatoryClaim(clientAssertionClaims, "exp");
-        Integer iat = (Integer) readMandatoryClaim(clientAssertionClaims, "iat");
+        long exp = readMandatoryNumericClaim(clientAssertionClaims, "exp");
+        long iat = readMandatoryNumericClaim(clientAssertionClaims, "iat");
 
-        return Map.of(
-                "exp", exp+"",
-                "iat", iat+"",
-                "nbf", iat+"",
-                "digest", objectMapper.writeValueAsString(signedDigest),
-                "purposeId", signedPurposeId,
-                "sub", clientId,
-                "client_id", clientId
-        );
+        Map<String, String> claims = new LinkedHashMap<>();
+        claims.put("exp", exp + "");
+        claims.put("iat", iat + "");
+        claims.put("nbf", iat + "");
+        if (!CollectionUtils.isEmpty(signedDigest)) {
+            claims.put("digest", objectMapper.writeValueAsString(signedDigest));
+        }
+        claims.put("purposeId", signedPurposeId);
+        claims.put("sub", clientId);
+        claims.put("client_id", clientId);
+        return claims;
     }
 
     private static void validateExpectedClaim(Map<String, Object> clientAssertionClaims, String claimName, String expectedClaimValue) {
@@ -105,6 +132,18 @@ public class PdndMockServiceImpl implements PdndMockService {
         }
     }
 
+    private void validateExpectedAudience(Object audienceClaim) {
+        if (expectedAudience.equals(audienceClaim)) {
+            return;
+        }
+
+        if (audienceClaim instanceof Collection<?> audienceValues && audienceValues.contains(expectedAudience)) {
+            return;
+        }
+
+        throw new IllegalArgumentException("[PDND_MOCK] Unexpected clientAssertion claims: aud doesn't match: " + audienceClaim);
+    }
+
     @NonNull
     private static Object readMandatoryClaim(Map<String, Object> clientAssertionClaims, String claimName) {
         Object claimValue = clientAssertionClaims.get(claimName);
@@ -112,6 +151,23 @@ public class PdndMockServiceImpl implements PdndMockService {
             throw new IllegalArgumentException("[PDND_MOCK] Unexpected clientAssertion claims: " + claimName + " not provided");
         }
         return claimValue;
+    }
+
+    private static long readMandatoryNumericClaim(Map<String, Object> clientAssertionClaims, String claimName) {
+        Object claimValue = readMandatoryClaim(clientAssertionClaims, claimName);
+        if (claimValue instanceof Number number) {
+            return number.longValue();
+        }
+
+        throw new IllegalArgumentException("[PDND_MOCK] Unexpected clientAssertion claims: " + claimName + " is not numeric");
+    }
+
+    private static byte[] decodeJwtPart(String jwtPart) {
+        try {
+            return Base64.getUrlDecoder().decode(jwtPart);
+        } catch (IllegalArgumentException _) {
+            return Base64.getDecoder().decode(jwtPart);
+        }
     }
 
     private String createClaims(Map<String, String> claimsFromRequest) {
@@ -129,6 +185,53 @@ public class PdndMockServiceImpl implements PdndMockService {
                                         .collect(Collectors.joining(",\n"))
                         )
                         .getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    @Override
+    public VisuraImpresa getRawInstitutionDetail(String taxCode) {
+        MockedVisuraImpresa visura = mongoTemplate.findOne(
+                Query.query(Criteria.where("taxCode").is(taxCode)),
+                MockedVisuraImpresa.class
+        );
+
+        if (visura == null) {
+            return makeDefaultVisura(taxCode);
+        }
+        if (visura.getClassificazioniAteco() == null) {
+            visura.setClassificazioniAteco(Collections.emptyList());
+        }
+        return visuraImpresaMapper.mapMockedVisuraImpresa(visura);
+    }
+
+    @Override
+    public void saveVisuraImpresa(VisuraImpresa visuraImpresa) {
+        if (visuraImpresa == null || StringUtils.isBlank(visuraImpresa.getCodiceFiscale())) {
+            throw new IllegalArgumentException("[PDND_MOCK] codice-fiscale is mandatory to save a VisuraImpresa");
+        }
+
+        MockedVisuraImpresa toSave = mockedVisuraImpresaMapper.mapVisuraImpresa(visuraImpresa);
+
+        log.info("[PDND_MOCK] Saving mocked VisuraImpresa for taxCode {}", 
+                    Utilities.sanitizeForLog(toSave.getTaxCode()));
+        mongoTemplate.save(toSave);
+    }
+
+    private VisuraImpresa makeDefaultVisura(String taxCode) {
+        return new VisuraImpresa(
+                taxCode,
+                new InfoAttivita(List.of(
+                        ClassificazioneAteco.builder()
+                                .codiceAttivita("47.11.10")
+                                .attivita("Commercio al dettaglio")
+                                .codiceImportanza("1")
+                                .build(),
+                        ClassificazioneAteco.builder()
+                                .codiceAttivita("56.10.11")
+                                .attivita("Ristorazione")
+                                .codiceImportanza("2")
+                                .build()
+                ))
         );
     }
 

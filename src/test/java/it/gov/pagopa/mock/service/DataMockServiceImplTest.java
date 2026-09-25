@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
@@ -24,10 +24,10 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = DataMockServiceImpl.class)
 class DataMockServiceImplTest {
 
-    @MockBean
+    @MockitoBean
     private ResidenceMockGeneratorService residenceMockGeneratorService;
 
-    @MockBean
+    @MockitoBean
     private FamilyMockGeneratorService familyMockGeneratorService;
 
     @Autowired

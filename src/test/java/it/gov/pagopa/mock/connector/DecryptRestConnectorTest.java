@@ -6,8 +6,8 @@ import it.gov.pagopa.mock.dto.DecryptCfDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {DecryptRestConnectorImpl.class, String.class})
 @ExtendWith(SpringExtension.class)
 class DecryptRestConnectorTest {
-    @MockBean
+    @MockitoBean
     private DecryptRest decryptRest;
 
     @Autowired

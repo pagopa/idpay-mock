@@ -2,13 +2,15 @@ package it.gov.pagopa.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.common.config.JsonConfig;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public final class TestUtils {
     private TestUtils() {
@@ -21,7 +23,7 @@ public final class TestUtils {
     /**
      * applications's objectMapper
      */
-    public static ObjectMapper objectMapper = new JsonConfig().objectMapper();
+    public static ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * It will assert not null on all o's fields
@@ -62,6 +64,14 @@ public final class TestUtils {
             return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void wait(long timeout, TimeUnit timeoutUnit) {
+        try{
+            Awaitility.await().timeout(timeout, timeoutUnit).until(()->false);
+        } catch (ConditionTimeoutException ex){
+            // Do Nothing
         }
     }
 

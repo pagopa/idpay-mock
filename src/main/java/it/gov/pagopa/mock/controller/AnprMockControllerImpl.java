@@ -35,8 +35,6 @@ public class AnprMockControllerImpl implements AnprMockController {
         return anprResidence;
     }
 
-    /** ANPR user found ok*/
-
     @Override
     public ResponseEntity<AnprResponseBase> getAnprFamily(AnprRequestDTO body) {
         return switch (anprResponseType) {
